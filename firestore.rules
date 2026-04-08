@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: serviceModels
+    // Fields:
+    //   - name: string (required)
+    //   - description: string (optional)
+    //
+    // Collection: boats
+    // Fields:
+    //   - name: string (required)
+    //   - type: string (required)
+    //   - length: number (required)
+    //   - guests: number (required)
+    //   - cabins: number (required)
+    //   - serviceModelId: string (required)
+    //   - images: list (optional, max 4)
+    //   - videoUrl: string (optional)
+    //   - captain: string (optional)
+    //   - price: number (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "pacificyacht.48@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isValidServiceModel(data) {
+      return data.keys().hasAll(['name']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    }
+
+    function isValidBoat(data) {
+      return data.keys().hasAll(['name', 'type', 'length', 'guests', 'cabins', 'serviceModelIds', 'price']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.type is string &&
+             data.length is number && data.length > 0 &&
+             data.guests is number && data.guests > 0 &&
+             data.cabins is number && data.cabins >= 0 &&
+             data.serviceModelIds is list &&
+             data.price is number && data.price >= 0 &&
+             (!('images' in data) || (data.images is list && data.images.size() <= 4)) &&
+             (!('videoUrl' in data) || data.videoUrl is string) &&
+             (!('captain' in data) || data.captain is string);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /serviceModels/{serviceModelId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin() && isValidServiceModel(request.resource.data);
+    }
+
+    match /boats/{boatId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin() && isValidBoat(request.resource.data);
+    }
+  }
+}

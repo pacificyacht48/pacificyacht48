@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "ServiceModel": {
+      "title": "Service Model",
+      "description": "Defines the types of services offered (e.g., Weekly, Daily, etc.)",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the service model"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the service model"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "Boat": {
+      "title": "Boat",
+      "description": "Details of a yacht in the fleet",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Boat Name"
+        },
+        "type": {
+          "type": "string",
+          "description": "Boat Type (Motor Yacht, Gulet, etc.)"
+        },
+        "length": {
+          "type": "number",
+          "description": "Length in meters"
+        },
+        "guests": {
+          "type": "number",
+          "description": "Guest Capacity"
+        },
+        "cabins": {
+          "type": "number",
+          "description": "Number of Cabins"
+        },
+        "serviceModelIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "References to ServiceModel IDs"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of 4 image URLs"
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "Video URL"
+        },
+        "captain": {
+          "type": "string",
+          "description": "Captain Name/Details"
+        },
+        "price": {
+          "type": "number",
+          "description": "Price"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "length",
+        "guests",
+        "cabins",
+        "serviceModelId",
+        "price"
+      ]
+    }
+  },
+  "firestore": {
+    "/serviceModels/{serviceModelId}": {
+      "schema": "ServiceModel",
+      "description": "Collection of service models"
+    },
+    "/boats/{boatId}": {
+      "schema": "Boat",
+      "description": "Collection of boats"
+    }
+  }
+}

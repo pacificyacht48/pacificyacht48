@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-gold: #D4AF37;
+  --color-gold-light: #F3E5AB;
+  --color-gold-dark: #AA8C2C;
+  --color-navy: #0A192F;
+  --color-navy-light: #112240;
+  --color-navy-dark: #020C1B;
+  --color-offwhite: #F5F2ED;
+}
+
+body {
+  background-color: var(--color-offwhite);
+  color: var(--color-navy);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark-glass-panel {
+  background: rgba(10, 25, 47, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* DayPicker Customization for Luxury Feel */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: var(--color-gold);
+  --rdp-background-color: var(--color-gold-light);
+  --rdp-accent-color-dark: var(--color-gold-dark);
+  --rdp-background-color-dark: var(--color-navy-light);
+  --rdp-outline: 2px solid var(--color-gold);
+  --rdp-outline-selected: 2px solid var(--color-gold);
+  margin: 0;
+}
+.rdp-day_selected {
+  background-color: var(--color-gold) !important;
+  color: var(--color-navy-dark) !important;
+  font-weight: 600;
+}
+.rdp-day:hover:not(.rdp-day_selected) {
+  background-color: var(--color-gold-light) !important;
+  color: var(--color-navy-dark) !important;
+}
