@@ -12,7 +12,7 @@ export const translations = {
     booking: { title: 'Request a Quote', name: 'Full Name', phone: 'Phone Number', email: 'Email Address', contactMethod: 'Preferred Contact Method', phoneOpt: 'Phone Call', whatsappOpt: 'WhatsApp', emailOpt: 'Email', estimatedPrice: 'Estimated Price', submit: 'Send Request', cancel: 'Cancel', pending: 'Select options to calculate', priceNote: '*This is an estimated base price. Final quote may vary.' }
   },
   tr: {
-    nav: { fleet: 'Filo', services: 'Hizmetler', destinations: 'Rotalar', about: 'Hakkımızda', bookNow: 'Rezervasyon' },
+    nav: { fleet: 'FİLO', services: 'Hizmetler', destinations: 'Rotalar', about: 'Hakkımızda', bookNow: 'Rezervasyon' },
     hero: { subtitle: 'Sıradışını Deneyimleyin', title1: 'Sınırların', title2: 'Ötesinde' },
     search: { boatType: 'Tekne Tipi', service: 'Hizmet', duration: 'Süre', date: 'Tarih', allTypes: 'Tüm Tipler', anyService: 'Tüm Hizmetler', anyDuration: 'Tüm Süreler', selectDate: 'Tarih Seçin', searchBtn: 'Fiyat Al' },
     services: { title: 'Özel Deneyimler', desc: 'En seçkin gezginler için tasarlanmış özel yolculuklar. Samimi gün batımı turlarından büyük haftalık yolculuklara kadar.', discover: 'Daha Fazla Keşfet' },
