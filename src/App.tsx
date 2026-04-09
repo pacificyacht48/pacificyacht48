@@ -81,22 +81,47 @@ export default function App() {
 
     // Set up real-time subscription for Supabase
     const channel = supabase
-      .channel('public_service_models_changes')
+      .channel('app_service_models')
       .on('postgres_changes', { event: '*', table: 'service_models', schema: 'public' }, () => {
         fetchServices();
       })
       .subscribe();
 
-    // Fetch dynamic boats
-    const qBoats = query(collection(db, 'boats'), orderBy('name'));
-    const unsubBoats = onSnapshot(qBoats, (snapshot) => {
-      setDynamicBoats(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Boat)));
-    });
+    // Fetch dynamic boats from Supabase
+    const fetchBoats = async () => {
+      const { data, error } = await supabase
+        .from('boats')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching boats:', error);
+      } else {
+        // Map snake_case from DB to camelCase for the app
+        const mappedBoats = (data || []).map((b: any) => ({
+          ...b,
+          serviceModelIds: b.service_model_ids || [],
+          images: b.images || [],
+          videoUrl: b.video_url || ''
+        }));
+        setDynamicBoats(mappedBoats);
+      }
+    };
+
+    fetchBoats();
+
+    // Set up real-time subscription for boats
+    const boatChannel = supabase
+      .channel('app_boats')
+      .on('postgres_changes', { event: '*', table: 'boats', schema: 'public' }, () => {
+        fetchBoats();
+      })
+      .subscribe();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       supabase.removeChannel(channel);
-      unsubBoats();
+      supabase.removeChannel(boatChannel);
     };
   }, []);
 
@@ -367,7 +392,7 @@ export default function App() {
               >
                 <div className="relative h-80 md:h-96 overflow-hidden mb-6">
                   <img 
-                    src={'images' in yacht ? (yacht.images as string[])[0] : (yacht as any).image} 
+                    src={'images' in yacht ? ((yacht.images as string[])?.[0] || 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800') : (yacht as any).image} 
                     alt={yacht.name} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
@@ -386,7 +411,7 @@ export default function App() {
                   </div>
                   <div className={`text-${isRtl ? 'left' : 'right'}`}>
                     <div className="text-sm text-gray-400 uppercase tracking-wider mb-1">{t.fleet.from}</div>
-                    <div className="text-2xl font-serif text-[#D4AF37]">€{(yacht as any).pricePerDay ? (yacht as any).pricePerDay.toLocaleString() : (yacht as any).price.toLocaleString()} <span className="text-sm text-gray-400 font-sans">{t.fleet.perDay}</span></div>
+                    <div className="text-2xl font-serif text-[#D4AF37]">€{((yacht as any).pricePerDay || (yacht as any).price || 0).toLocaleString()} <span className="text-sm text-gray-400 font-sans">{t.fleet.perDay}</span></div>
                   </div>
                 </div>
               </motion.div>

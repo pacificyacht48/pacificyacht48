@@ -47,6 +47,12 @@ interface ServiceModel {
   description: string;
 }
 
+interface AdditionalService {
+  id: string;
+  name: string;
+  description: string;
+}
+
 interface Boat {
   id: string;
   name: string;
@@ -57,7 +63,6 @@ interface Boat {
   serviceModelIds: string[];
   images: string[];
   videoUrl: string;
-  captain: string;
   price: number;
 }
 
@@ -67,14 +72,19 @@ interface AdminPanelProps {
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'services' | 'boats'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'services' | 'boats' | 'extra-services'>('dashboard');
   const [serviceModels, setServiceModels] = useState<ServiceModel[]>([]);
+  const [additionalServices, setAdditionalServices] = useState<AdditionalService[]>([]);
   const [boats, setBoats] = useState<Boat[]>([]);
   
   // Form States
   const [serviceName, setServiceName] = useState('');
   const [serviceDesc, setServiceDesc] = useState('');
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+
+  const [extraName, setExtraName] = useState('');
+  const [extraDesc, setExtraDesc] = useState('');
+  const [editingExtraId, setEditingExtraId] = useState<string | null>(null);
   
   const [boatName, setBoatName] = useState('');
   const [boatType, setBoatType] = useState('Motor Yat');
@@ -85,7 +95,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [boatImages, setBoatImages] = useState(['', '', '', '']);
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [boatVideo, setBoatVideo] = useState('');
-  const [boatCaptain, setBoatCaptain] = useState('');
   const [boatPrice, setBoatPrice] = useState('');
 
   const [isBoatFormOpen, setIsBoatFormOpen] = useState(false);
@@ -117,22 +126,71 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
     fetchServices();
 
+    // Fetch Additional Services from Supabase
+    const fetchExtras = async () => {
+      const { data, error } = await supabase
+        .from('additional_services')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching extras:', error);
+      } else {
+        setAdditionalServices(data || []);
+      }
+    };
+
+    fetchExtras();
+
+    // Fetch Boats from Supabase
+    const fetchBoats = async () => {
+      const { data, error } = await supabase
+        .from('boats')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching boats:', error);
+      } else {
+        // Map snake_case from DB to camelCase for the app
+        const mappedBoats = (data || []).map((b: any) => ({
+          ...b,
+          serviceModelIds: b.service_model_ids || [],
+          images: b.images || [],
+          videoUrl: b.video_url || ''
+        }));
+        setBoats(mappedBoats);
+      }
+    };
+
+    fetchBoats();
+
     // Set up real-time subscription for Supabase
-    const channel = supabase
-      .channel('service_models_changes')
+    const serviceChannel = supabase
+      .channel('admin_service_models')
       .on('postgres_changes', { event: '*', table: 'service_models', schema: 'public' }, () => {
         fetchServices();
       })
       .subscribe();
 
-    const qBoats = query(collection(db, 'boats'), orderBy('name'));
-    const unsubBoats = onSnapshot(qBoats, (snapshot) => {
-      setBoats(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Boat)));
-    });
+    const extraChannel = supabase
+      .channel('admin_additional_services')
+      .on('postgres_changes', { event: '*', table: 'additional_services', schema: 'public' }, () => {
+        fetchExtras();
+      })
+      .subscribe();
+
+    const boatChannel = supabase
+      .channel('admin_boats')
+      .on('postgres_changes', { event: '*', table: 'boats', schema: 'public' }, () => {
+        fetchBoats();
+      })
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
-      unsubBoats();
+      supabase.removeChannel(serviceChannel);
+      supabase.removeChannel(extraChannel);
+      supabase.removeChannel(boatChannel);
     };
   }, [user]);
 
@@ -199,6 +257,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     }
   };
 
+  const addAdditionalService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!extraName) return;
+    
+    if (editingExtraId) {
+      const { error } = await supabase
+        .from('additional_services')
+        .update({ name: extraName, description: extraDesc })
+        .eq('id', editingExtraId);
+
+      if (error) {
+        console.error('Error updating extra service:', error);
+        alert('Ek hizmet güncellenirken bir hata oluştu.');
+      } else {
+        setExtraName('');
+        setExtraDesc('');
+        setEditingExtraId(null);
+      }
+    } else {
+      const { error } = await supabase
+        .from('additional_services')
+        .insert([{ name: extraName, description: extraDesc }]);
+
+      if (error) {
+        console.error('Error adding extra service:', error);
+        alert('Ek hizmet eklenirken bir hata oluştu.');
+      } else {
+        setExtraName('');
+        setExtraDesc('');
+      }
+    }
+  };
+
+  const handleEditExtra = (extra: AdditionalService) => {
+    setExtraName(extra.name);
+    setExtraDesc(extra.description);
+    setEditingExtraId(extra.id);
+  };
+
+  const deleteAdditionalService = async (id: string) => {
+    if (window.confirm('Bu ek hizmeti silmek istediğinize emin misiniz?')) {
+      const { error } = await supabase
+        .from('additional_services')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting extra service:', error);
+        alert('Ek hizmet silinirken bir hata oluştu.');
+      }
+    }
+  };
+
   const addBoat = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!boatName || boatServiceModels.length === 0) return;
@@ -209,17 +320,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       length: Number(boatLength),
       guests: Number(boatGuests),
       cabins: Number(boatCabins),
-      serviceModelIds: boatServiceModels,
+      service_model_ids: boatServiceModels,
       images: boatImages.filter(img => img !== ''),
-      videoUrl: boatVideo,
-      captain: boatCaptain,
+      video_url: boatVideo,
       price: Number(boatPrice)
     };
 
     if (editingBoatId) {
-      await updateDoc(doc(db, 'boats', editingBoatId), boatData);
+      const { error } = await supabase
+        .from('boats')
+        .update(boatData)
+        .eq('id', editingBoatId);
+      
+      if (error) {
+        console.error('Error updating boat:', error);
+        alert('Tekne güncellenirken bir hata oluştu.');
+        return;
+      }
     } else {
-      await addDoc(collection(db, 'boats'), boatData);
+      const { error } = await supabase
+        .from('boats')
+        .insert([boatData]);
+      
+      if (error) {
+        console.error('Error adding boat:', error);
+        alert('Tekne eklenirken bir hata oluştu.');
+        return;
+      }
     }
 
     // Reset Form
@@ -230,22 +357,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     setBoatServiceModels([]);
     setBoatImages(['', '', '', '']);
     setBoatVideo('');
-    setBoatCaptain('');
     setBoatPrice('');
     setIsBoatFormOpen(false);
     setEditingBoatId(null);
   };
 
   const handleEditBoat = (boat: Boat) => {
+    const images = boat.images || [];
+    const serviceModelIds = boat.serviceModelIds || [];
+    
     setBoatName(boat.name);
     setBoatType(boat.type);
     setBoatLength(boat.length.toString());
     setBoatGuests(boat.guests.toString());
     setBoatCabins(boat.cabins.toString());
-    setBoatServiceModels(boat.serviceModelIds);
-    setBoatImages([...boat.images, ...Array(4 - boat.images.length).fill('')].slice(0, 4));
-    setBoatVideo(boat.videoUrl);
-    setBoatCaptain(boat.captain);
+    setBoatServiceModels(serviceModelIds);
+    setBoatImages([...images, ...Array(4 - images.length).fill('')].slice(0, 4));
+    setBoatVideo(boat.videoUrl || '');
     setBoatPrice(boat.price.toString());
     setEditingBoatId(boat.id);
     setIsBoatFormOpen(true);
@@ -253,7 +381,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
   const deleteBoat = async (id: string) => {
     if (window.confirm('Bu tekneyi silmek istediğinize emin misiniz?')) {
-      await deleteDoc(doc(db, 'boats', id));
+      const { error } = await supabase
+        .from('boats')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting boat:', error);
+        alert('Tekne silinirken bir hata oluştu.');
+      }
     }
   };
 
@@ -263,16 +399,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
     try {
       setUploadingIdx(index);
-      const storageRef = ref(storage, `boats/${Date.now()}_${file.name}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('Tekneler')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error("Supabase Upload Error:", error);
+        throw error;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('Tekneler')
+        .getPublicUrl(fileName);
       
       const newImages = [...boatImages];
-      newImages[index] = downloadURL;
+      newImages[index] = publicUrl;
       setBoatImages(newImages);
-    } catch (error) {
-      console.error("Upload failed", error);
-      alert("Resim yüklenirken bir hata oluştu.");
+    } catch (error: any) {
+      console.error("Full Upload Error Object:", error);
+      alert(`Resim yüklenemedi: ${error.message || 'Bilinmeyen hata'}\n\nLütfen Supabase SQL Editor'da Storage politikalarını (Policy) ayarladığınızdan emin olun.`);
     } finally {
       setUploadingIdx(null);
     }
@@ -317,6 +468,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${activeTab === 'services' ? 'bg-[#D4AF37] text-[#0A192F]' : 'hover:bg-white/10'}`}
           >
             <Settings size={20} /> Hizmet Modelleri
+          </button>
+          <button 
+            onClick={() => setActiveTab('extra-services')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${activeTab === 'extra-services' ? 'bg-[#D4AF37] text-[#0A192F]' : 'hover:bg-white/10'}`}
+          >
+            <Plus size={20} /> Ek Hizmetler
           </button>
           <button 
             onClick={() => setActiveTab('boats')}
@@ -368,6 +525,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                 <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
                   <p className="text-gray-500 text-sm uppercase tracking-widest mb-2">Hizmet Modelleri</p>
                   <p className="text-4xl font-serif">{serviceModels.length}</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+                  <p className="text-gray-500 text-sm uppercase tracking-widest mb-2">Ek Hizmetler</p>
+                  <p className="text-4xl font-serif">{additionalServices.length}</p>
                 </div>
               </div>
             </motion.div>
@@ -462,6 +623,95 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             </motion.div>
           )}
 
+          {activeTab === 'extra-services' && (
+            <motion.div 
+              key="extra-services"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-serif">Ek Hizmetler</h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Form */}
+                <div className="lg:col-span-1">
+                  <form onSubmit={addAdditionalService} className="bg-white p-6 rounded-lg shadow-sm space-y-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">
+                        {editingExtraId ? 'Ek Hizmet Düzenle' : 'Yeni Ek Hizmet'}
+                      </h3>
+                      {editingExtraId && (
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setEditingExtraId(null);
+                            setExtraName('');
+                            setExtraDesc('');
+                          }}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <X size={18} />
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Hizmet Adı</label>
+                      <input 
+                        type="text" 
+                        value={extraName}
+                        onChange={(e) => setExtraName(e.target.value)}
+                        className="w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                        placeholder="Örn: Havaalanı Transferi"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                      <textarea 
+                        value={extraDesc}
+                        onChange={(e) => setExtraDesc(e.target.value)}
+                        className="w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                        rows={3}
+                      />
+                    </div>
+                    <button type="submit" className="w-full bg-[#0A192F] text-white py-2 rounded-md hover:bg-[#D4AF37] transition-colors flex items-center justify-center gap-2">
+                      {editingExtraId ? <Edit2 size={18} /> : <Plus size={18} />}
+                      {editingExtraId ? 'Güncelle' : 'Ekle'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* List */}
+                <div className="lg:col-span-2 space-y-4">
+                  {additionalServices.map(extra => (
+                    <div key={extra.id} className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center">
+                      <div>
+                        <h4 className="font-semibold">{extra.name}</h4>
+                        <p className="text-sm text-gray-500">{extra.description}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleEditExtra(extra)}
+                          className="text-blue-500 hover:bg-blue-50 p-2 rounded-full transition-colors"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button 
+                          onClick={() => deleteAdditionalService(extra.id)}
+                          className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === 'boats' && (
             <motion.div 
               key="boats"
@@ -482,7 +732,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       setBoatServiceModels([]);
                       setBoatImages(['', '', '', '']);
                       setBoatVideo('');
-                      setBoatCaptain('');
                       setBoatPrice('');
                     }
                     setIsBoatFormOpen(!isBoatFormOpen);
@@ -517,7 +766,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                             required
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tekne Tipi</label>
                             <select 
@@ -534,9 +783,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Hizmet Modelleri (Çoklu Seçim)</label>
-                            <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-1">
+                            <div className="max-h-48 overflow-y-auto border rounded-md p-4 grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50">
                               {serviceModels.map(s => (
-                                <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                <label key={s.id} className="flex items-center gap-3 text-sm cursor-pointer bg-white p-2.5 rounded-md border border-gray-200 hover:border-[#D4AF37] hover:shadow-sm transition-all">
                                   <input 
                                     type="checkbox"
                                     checked={boatServiceModels.includes(s.id)}
@@ -547,15 +796,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                                         setBoatServiceModels(boatServiceModels.filter(id => id !== s.id));
                                       }
                                     }}
-                                    className="accent-[#D4AF37]"
+                                    className="accent-[#D4AF37] w-5 h-5 shrink-0"
                                   />
-                                  {s.name}
+                                  <span className="font-medium text-gray-700 leading-tight">{s.name}</span>
                                 </label>
                               ))}
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Uzunluk (m)</label>
                             <input 
@@ -586,21 +835,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                               required
                             />
                           </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Kaptan</label>
-                            <div className="relative">
-                              <UserIcon className="absolute left-2 top-2.5 text-gray-400" size={16} />
-                              <input 
-                                type="text" 
-                                value={boatCaptain}
-                                onChange={(e) => setBoatCaptain(e.target.value)}
-                                className="w-full p-2 pl-8 border rounded-md outline-none focus:ring-2 focus:ring-[#D4AF37]"
-                                placeholder="Kaptan Adı"
-                              />
-                            </div>
-                          </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Ücret (€)</label>
                             <div className="relative">
@@ -620,7 +854,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold border-b pb-2">Medya Bilgileri</h3>
                         <div className="space-y-3">
-                          <label className="block text-sm font-medium text-gray-700">Resimler (4 Adet)</label>
+                          <label className="block text-sm font-medium text-gray-700">Resimler (4 Adet) - İlk resim ana görseldir</label>
                           <div className="grid grid-cols-2 gap-4">
                             {boatImages.map((url, idx) => (
                               <div key={idx} className="relative aspect-video bg-gray-100 rounded-md border-2 border-dashed border-gray-300 overflow-hidden group">
@@ -693,7 +927,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                     <div key={boat.id} className="bg-white rounded-lg shadow-sm overflow-hidden group">
                       <div className="h-48 overflow-hidden relative">
                         <img 
-                          src={boat.images[0] || 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800'} 
+                          src={(boat.images && boat.images[0]) || 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800'} 
                           alt="" 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -715,7 +949,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       <div className="p-4">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-serif text-lg">{boat.name}</h4>
-                          <span className="text-[#D4AF37] font-semibold">€{boat.price.toLocaleString()}</span>
+                          <span className="text-[#D4AF37] font-semibold">€{(boat.price || 0).toLocaleString()}</span>
                         </div>
                         <div className="flex gap-3 text-xs text-gray-500">
                           <span>{boat.type}</span>
