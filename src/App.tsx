@@ -288,7 +288,7 @@ export default function App() {
             ))}
             <button 
               onClick={() => setIsBookingModalOpen(true)}
-              className="border border-[#D4AF37] text-[#D4AF37] px-6 py-2 text-sm uppercase tracking-widest hover:bg-[#D4AF37] hover:text-[#0A192F] transition-all"
+              className="border border-[#00ADB5] text-[#00ADB5] px-6 py-2 text-sm uppercase tracking-widest hover:bg-[#00ADB5] hover:text-white transition-all"
             >
               {t.nav.bookNow}
             </button>
@@ -323,7 +323,7 @@ export default function App() {
               ))}
               <button 
                 onClick={() => { setIsMenuOpen(false); setIsBookingModalOpen(true); }}
-                className="mt-4 border border-[#D4AF37] text-[#D4AF37] px-6 py-3 text-sm uppercase tracking-widest hover:bg-[#D4AF37] hover:text-[#0A192F] transition-all inline-block mx-auto"
+                className="mt-4 border border-[#00ADB5] text-[#00ADB5] px-6 py-3 text-sm uppercase tracking-widest hover:bg-[#00ADB5] hover:text-white transition-all inline-block mx-auto"
               >
                 {t.nav.bookNow}
               </button>
