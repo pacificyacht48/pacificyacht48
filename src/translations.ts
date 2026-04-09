@@ -9,7 +9,8 @@ export const translations = {
     boatTypes: { "Motor Yacht": "Motor Yacht", "Gulet": "Gulet", "Catamaran": "Catamaran", "Sailboat": "Sailboat", "Trawler": "Trawler" },
     serviceTypes: { "Weekly Accommodation Tours": "Weekly Accommodation Tours", "Daily Sightseeing Tours": "Daily Sightseeing Tours", "Water Sports": "Water Sports", "Fishing Tours": "Fishing Tours", "Evening Moonlight Dinner Tours": "Evening Moonlight Dinner Tours", "Party / Birthday / Engagement Tours": "Party / Birthday / Engagement Tours" },
     durations: { "1 Day": "1 Day", "3 Days": "3 Days", "1 Week": "1 Week", "2 Weeks": "2 Weeks" },
-    booking: { title: 'Request a Quote', name: 'Full Name', phone: 'Phone Number', email: 'Email Address', contactMethod: 'Preferred Contact Method', phoneOpt: 'Phone Call', whatsappOpt: 'WhatsApp', emailOpt: 'Email', estimatedPrice: 'Estimated Price', submit: 'Send Request', cancel: 'Cancel', pending: 'Select options to calculate', priceNote: '*This is an estimated base price. Final quote may vary.' }
+    booking: { title: 'Request a Quote', name: 'Full Name', phone: 'Phone Number', email: 'Email Address', contactMethod: 'Preferred Contact Method', phoneOpt: 'Phone Call', whatsappOpt: 'WhatsApp', emailOpt: 'Email', estimatedPrice: 'Estimated Price', submit: 'Send Request', cancel: 'Cancel', pending: 'Select options to calculate', priceNote: '*This is an estimated base price. Final quote may vary.' },
+    routes: { title: 'Popular Routes', desc: 'Discover the most enchanting locations across the coastline.', explore: 'Explore Route' }
   },
   tr: {
     nav: { fleet: 'FİLO', services: 'Hizmetler', destinations: 'Rotalar', about: 'Hakkımızda', bookNow: 'Rezervasyon' },
@@ -21,7 +22,8 @@ export const translations = {
     boatTypes: { "Motor Yacht": "Motor Yat", "Gulet": "Gulet", "Catamaran": "Katamaran", "Sailboat": "Yelkenli", "Trawler": "Trawler" },
     serviceTypes: { "Weekly Accommodation Tours": "Haftalık Konaklamalı Turlar", "Daily Sightseeing Tours": "Günlük Gezi Turları", "Water Sports": "Su Sporları", "Fishing Tours": "Balıkçılık Turları", "Evening Moonlight Dinner Tours": "Akşam Ay Işığı Yemekli Turlar", "Party / Birthday / Engagement Tours": "Parti / Doğum Günü / Nişan Turları" },
     durations: { "1 Day": "1 Gün", "3 Days": "3 Gün", "1 Week": "1 Hafta", "2 Weeks": "2 Hafta" },
-    booking: { title: 'Fiyat Teklifi Alın', name: 'Ad Soyad', phone: 'Telefon Numarası', email: 'E-posta Adresi', contactMethod: 'İletişim Yöntemi', phoneOpt: 'Telefon', whatsappOpt: 'WhatsApp', emailOpt: 'E-posta', estimatedPrice: 'Tahmini Fiyat', submit: 'Talebi Gönder', cancel: 'İptal', pending: 'Hesaplama için seçim yapın', priceNote: '*Bu tahmini bir başlangıç fiyatıdır. Nihai teklif değişiklik gösterebilir.' }
+    booking: { title: 'Fiyat Teklifi Alın', name: 'Ad Soyad', phone: 'Telefon Numarası', email: 'E-posta Adresi', contactMethod: 'İletişim Yöntemi', phoneOpt: 'Telefon', whatsappOpt: 'WhatsApp', emailOpt: 'E-posta', estimatedPrice: 'Tahmini Fiyat', submit: 'Talebi Gönder', cancel: 'İptal', pending: 'Hesaplama için seçim yapın', priceNote: '*Bu tahmini bir başlangıç fiyatıdır. Nihai teklif değişiklik gösterebilir.' },
+    routes: { title: 'Popüler Rotalar', desc: 'Kıyılarımızdaki en büyüleyici durakları ve eşsiz rotaları keşfedin.', explore: 'Rotayı İncele' }
   },
   de: {
     nav: { fleet: 'Flotte', services: 'Dienstleistungen', destinations: 'Reiseziele', about: 'Über uns', bookNow: 'Buchen' },
@@ -33,7 +35,8 @@ export const translations = {
     boatTypes: { "Motor Yacht": "Motoryacht", "Gulet": "Gulet", "Catamaran": "Katamaran", "Sailboat": "Segelboot", "Trawler": "Trawler" },
     serviceTypes: { "Weekly Accommodation Tours": "Wöchentliche Unterbringungstouren", "Daily Sightseeing Tours": "Tägliche Sightseeing-Touren", "Water Sports": "Wassersport", "Fishing Tours": "Angeltouren", "Evening Moonlight Dinner Tours": "Abendliche Mondschein-Dinner-Touren", "Party / Birthday / Engagement Tours": "Party- / Geburtstags- / Verlobungstouren" },
     durations: { "1 Day": "1 Tag", "3 Days": "3 Tage", "1 Week": "1 Woche", "2 Weeks": "2 Wochen" },
-    booking: { title: 'Angebot anfordern', name: 'Vollständiger Name', phone: 'Telefonnummer', email: 'E-Mail-Adresse', contactMethod: 'Bevorzugte Kontaktmethode', phoneOpt: 'Telefonanruf', whatsappOpt: 'WhatsApp', emailOpt: 'E-Mail', estimatedPrice: 'Geschätzter Preis', submit: 'Anfrage senden', cancel: 'Abbrechen', pending: 'Wählen Sie Optionen zur Berechnung', priceNote: '*Dies ist ein geschätzter Grundpreis. Das endgültige Angebot kann variieren.' }
+    booking: { title: 'Angebot anfordern', name: 'Vollständiger Name', phone: 'Telefonnummer', email: 'E-Mail-Adresse', contactMethod: 'Bevorzugte Kontaktmethode', phoneOpt: 'Telefonanruf', whatsappOpt: 'WhatsApp', emailOpt: 'E-Mail', estimatedPrice: 'Geschätzter Preis', submit: 'Anfrage senden', cancel: 'Abbrechen', pending: 'Wählen Sie Optionen zur Berechnung', priceNote: '*Dies ist ein geschätzter Grundpreis. Das endgültige Angebot kann variieren.' },
+    routes: { title: 'Beliebte Routen', desc: 'Entdecken Sie die bezauberndsten Orte entlang der Küste.', explore: 'Route erkunden' }
   },
   ru: {
     nav: { fleet: 'Флот', services: 'Услуги', destinations: 'Направления', about: 'О нас', bookNow: 'Забронировать' },
@@ -45,7 +48,8 @@ export const translations = {
     boatTypes: { "Motor Yacht": "Моторная яхта", "Gulet": "Гулет", "Catamaran": "Катамаран", "Sailboat": "Парусная лодка", "Trawler": "Траулер" },
     serviceTypes: { "Weekly Accommodation Tours": "Еженедельные туры с проживанием", "Daily Sightseeing Tours": "Ежедневные экскурсионные туры", "Water Sports": "Водные виды спорта", "Fishing Tours": "Рыболовные туры", "Evening Moonlight Dinner Tours": "Вечерние туры с ужином при лунном свете", "Party / Birthday / Engagement Tours": "Вечеринки / Дни рождения / Помолвки" },
     durations: { "1 Day": "1 День", "3 Days": "3 Дня", "1 Week": "1 Неделя", "2 Weeks": "2 Недели" },
-    booking: { title: 'Запросить цену', name: 'Полное имя', phone: 'Номер телефона', email: 'Адрес электронной почты', contactMethod: 'Предпочтительный способ связи', phoneOpt: 'Телефонный звонок', whatsappOpt: 'WhatsApp', emailOpt: 'Электронная почта', estimatedPrice: 'Ориентировочная цена', submit: 'Отправить запрос', cancel: 'Отмена', pending: 'Выберите параметры для расчета', priceNote: '*Это ориентировочная базовая цена. Окончательная цена может отличаться.' }
+    booking: { title: 'Запросить цену', name: 'Полное имя', phone: 'Номер телефона', email: 'Адрес электронной почты', contactMethod: 'Предпочтительный способ связи', phoneOpt: 'Телефонный звонок', whatsappOpt: 'WhatsApp', emailOpt: 'Электронная почта', estimatedPrice: 'Ориентировочная цена', submit: 'Отправить запрос', cancel: 'Отмена', pending: 'Выберите параметры для расчета', priceNote: '*Это ориентировочная базовая цена. Окончательная цена может отличаться.' },
+    routes: { title: 'Популярные маршруты', desc: 'Откройте для себя самые очаровательные места вдоль побережья.', explore: 'Исследовать маршрут' }
   },
   ar: {
     nav: { fleet: 'الأسطول', services: 'الخدمات', destinations: 'الوجهات', about: 'معلومات عنا', bookNow: 'احجز الآن' },
@@ -57,6 +61,8 @@ export const translations = {
     boatTypes: { "Motor Yacht": "يخت بمحرك", "Gulet": "جوليت", "Catamaran": "طوف", "Sailboat": "مركب شراعي", "Trawler": "سفينة صيد" },
     serviceTypes: { "Weekly Accommodation Tours": "جولات الإقامة الأسبوعية", "Daily Sightseeing Tours": "جولات مشاهدة المعالم اليومية", "Water Sports": "رياضات مائية", "Fishing Tours": "جولات الصيد", "Evening Moonlight Dinner Tours": "جولات عشاء مسائية في ضوء القمر", "Party / Birthday / Engagement Tours": "جولات الحفلات / أعياد الميلاد / الخطوبة" },
     durations: { "1 Day": "يوم واحد", "3 Days": "3 أيام", "1 Week": "أسبوع واحد", "2 Weeks": "أسبوعين" },
-    booking: { title: 'اطلب عرض أسعار', name: 'الاسم الكامل', phone: 'رقم الهاتف', email: 'عنوان البريد الإلكتروني', contactMethod: 'طريقة الاتصال المفضلة', phoneOpt: 'مكالمة هاتفية', whatsappOpt: 'واتساب', emailOpt: 'بريد إلكتروني', estimatedPrice: 'السعر التقديري', submit: 'إرسال الطلب', cancel: 'إلغاء', pending: 'حدد الخيارات للحساب', priceNote: '*هذا سعر أساسي تقديري. قد يختلف العرض النهائي.' }
+    booking: { title: 'اطلب عرض أسعار', name: 'الاسم الكامل', phone: 'رقم الهاتف', email: 'عنوان البريد الإلكتروني', contactMethod: 'طريقة الاتصال المفضلة', phoneOpt: 'مكالمة هاتفية', whatsappOpt: 'واتساب', emailOpt: 'بريد إلكتروني', estimatedPrice: 'السعر التقديري', submit: 'إرسال الطلب', cancel: 'إلغاء', pending: 'حدد الخيارات للحساب', priceNote: '*هذا سعر أساسي تقديري. قد يختلف العرض النهائي.' },
+    routes: { title: 'الطرق الشهيرة', desc: 'اكتشف المواقع الأكثر سحرًا عبر الساحل.', explore: 'استكشف الطريق' }
   }
 };
+

@@ -4,6 +4,7 @@ import { X, Phone, Mail, MessageCircle, Calculator } from 'lucide-react';
 import { format } from 'date-fns';
 import { translations } from '../translations';
 import { boatTypes, serviceTypes, durations } from '../data';
+import { supabase } from '../lib/supabase';
 
 type Language = keyof typeof translations;
 
@@ -81,12 +82,37 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { ...formData, estimatedPrice, language: lang };
-    console.log("Booking Request Payload (Ready for n8n/AI):", payload);
-    alert("Request sent successfully! Check console for payload.");
-    onClose();
+    if (!formData.name || !formData.phone || !formData.email) {
+      alert("Lütfen isim, telefon ve e-posta alanlarını doldurun.");
+      return;
+    }
+
+    const payload = {
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email,
+      contact_method: formData.contactMethod,
+      boat_type: formData.boatType,
+      service: formData.service,
+      duration: formData.duration,
+      date: formData.date || null,
+      estimated_price: estimatedPrice,
+      language: lang,
+      status: 'Yeni'
+    };
+
+    try {
+      const { error } = await supabase.from('bookings').insert([payload]);
+      if (error) throw error;
+      
+      alert("Talebiniz başarıyla alındı! En kısa sürede sizinle iletişime geçeceğiz.");
+      onClose();
+    } catch (error: any) {
+      console.error("Booking error:", error);
+      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+    }
   };
 
   if (!isOpen) return null;
