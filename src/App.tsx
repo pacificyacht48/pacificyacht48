@@ -419,7 +419,7 @@ export default function App() {
             <p className="text-[#D4AF37] uppercase tracking-[0.3em] text-sm md:text-base mb-6 font-medium">
               {t.hero.subtitle}
             </p>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8">
+            <h1 className="text-3xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8">
               <TypeWriter text={headings.find(h => h.key === 'hero')?.is_active ? (lang === 'tr' ? headings.find(h => h.key === 'hero')?.title_tr : headings.find(h => h.key === 'hero')?.title_en) || t.hero.title1 : t.hero.title1} delay={0.5} />
             </h1>
           </motion.div>
