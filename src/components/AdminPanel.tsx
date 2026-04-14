@@ -86,13 +86,15 @@ interface AdminPanelProps {
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [user, setUser] = useState<any>(null);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'services' | 'boat-types' | 'extra-services' | 'boats' | 'routes' | 'bookings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'services' | 'boat-types' | 'extra-services' | 'boats' | 'routes' | 'bookings' | 'headings'>('dashboard');
   const [serviceModels, setServiceModels] = useState<ServiceModel[]>([]);
   const [boatTypes, setBoatTypes] = useState<BoatType[]>([]);
   const [additionalServices, setAdditionalServices] = useState<AdditionalService[]>([]);
   const [boats, setBoats] = useState<Boat[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [headings, setHeadings] = useState<any[]>([]);
+
 
   
   // Form States
@@ -258,6 +260,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
     fetchBookings();
 
+    // Fetch Headings from Supabase
+    const fetchHeadings = async () => {
+      const { data, error } = await supabase
+        .from('headings')
+        .select('*')
+        .order('id');
+      
+      if (error) {
+        console.error('Error fetching headings:', error);
+      } else {
+        setHeadings(data || []);
+      }
+    };
+
+    fetchHeadings();
+
+
 
     // Set up real-time subscription for Supabase
     const serviceChannel = supabase
@@ -302,6 +321,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       })
       .subscribe();
 
+    const headingChannel = supabase
+      .channel('admin_headings')
+      .on('postgres_changes', { event: '*', table: 'headings', schema: 'public' }, () => {
+        fetchHeadings();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(serviceChannel);
       supabase.removeChannel(boatTypeChannel);
@@ -309,7 +335,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       supabase.removeChannel(boatChannel);
       supabase.removeChannel(routeChannel);
       supabase.removeChannel(bookingChannel);
+      supabase.removeChannel(headingChannel);
     };
+
 
   }, [user]);
 
@@ -863,6 +891,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
           >
             <Plus size={20} /> Ek Hizmetler
           </button>
+          <button 
+            onClick={() => setActiveTab('headings')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${activeTab === 'headings' ? 'bg-[#00ADB5] text-[#0A192F]' : 'hover:bg-white/10'}`}
+          >
+            <Settings size={20} /> Başlıklar
+          </button>
+
 
           <button 
             onClick={onBack}
@@ -1615,14 +1650,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                             value={routeDesc}
                             onChange={(e) => setRouteDesc(e.target.value)}
                             className="w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#00ADB5]"
-                            rows={5}
-                            required
+                            rows={3}
                           />
+                        </div>
+                        <div className="pt-4">
+                          <button type="submit" className="w-full bg-[#0A192F] text-white py-4 rounded-md hover:bg-[#00ADB5] transition-all font-semibold uppercase tracking-widest shadow-lg">
+                            {editingRouteId ? 'Değişiklikleri Kaydet' : 'Rotayı Kaydet'}
+                          </button>
                         </div>
                       </div>
 
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold border-b pb-2">Rota Resimleri</h3>
+                        <h3 className="text-lg font-semibold border-b pb-2">Rota Görselleri (4 Adet)</h3>
                         <div className="grid grid-cols-2 gap-4">
                           {routeImages.map((url, idx) => (
                             <div key={idx} className="relative aspect-video bg-gray-100 rounded-md border-2 border-dashed border-gray-300 overflow-hidden group">
@@ -1663,11 +1702,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                             </div>
                           ))}
                         </div>
-                        <div className="pt-4">
-                          <button type="submit" className="w-full bg-[#0A192F] text-white py-4 rounded-md hover:bg-[#00ADB5] transition-all font-semibold uppercase tracking-widest shadow-lg">
-                            {editingRouteId ? 'Değişiklikleri Kaydet' : 'Rotayı Kaydet'}
-                          </button>
-                        </div>
                       </div>
                     </form>
                   </motion.div>
@@ -1699,11 +1733,136 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       </div>
                     </div>
                     <div className="p-4">
-                      <h4 className="font-serif text-lg mb-2">{route.name}</h4>
-                      <p className="text-gray-500 text-xs line-clamp-2">{route.description}</p>
+                      <h4 className="font-serif text-lg mb-1">{route.name}</h4>
+                      <p className="text-sm text-gray-500 line-clamp-2">{route.description}</p>
                     </div>
                   </div>
                 ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'headings' && (
+            <motion.div 
+              key="headings"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-serif">Başlıklar ve Görünürlük</h2>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-6 bg-blue-50 border-b border-blue-100 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <Settings size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-blue-900">Ana Sayfa Bölüm Ayarları</h3>
+                    <p className="text-sm text-blue-700">Ana sayfadaki bölümlerin başlıklarını düzenleyebilir ve görünürlüklerini açıp kapatabilirsiniz.</p>
+                  </div>
+                </div>
+                
+                <div className="divide-y divide-gray-100">
+                  {headings.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-300 mb-4" />
+                      <p className="text-gray-500">Başlıklar yükleniyor...</p>
+                      <button 
+                        onClick={async () => {
+                          const initialHeadings = [
+                            { key: 'hero', title_tr: 'Sınırların Ötesinde Bir Tatil', title_en: 'A Vacation Beyond Boundaries', is_active: true },
+                            { key: 'aboutUs', title_tr: 'Hakkımızda', title_en: 'About Us', is_active: true },
+                            { key: 'fleet', title_tr: 'Filo', title_en: 'Fleet', is_active: true },
+                            { id: 'services', key: 'services', title_tr: 'Hizmetler', title_en: 'Services', is_active: true },
+                            { key: 'destinations', title_tr: 'Rotalar', title_en: 'Routes', is_active: true }
+                          ];
+                          await supabase.from('headings').insert(initialHeadings);
+                        }}
+                        className="mt-4 text-[#00ADB5] hover:underline text-sm"
+                      >
+                        Varsayılan Başlıkları Oluştur
+                      </button>
+                    </div>
+                  ) : headings.map(heading => (
+                    <div key={heading.id} className="p-6 hover:bg-gray-50 transition-colors">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex-1 space-y-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold uppercase tracking-widest text-[#00ADB5] bg-blue-50 px-2 py-1 rounded">
+                              Bölüm: {heading.key === 'aboutUs' ? 'Hakkımızda' : 
+                                      heading.key === 'fleet' ? 'Filo' : 
+                                      heading.key === 'services' ? 'Hizmetler' : 
+                                      heading.key === 'destinations' ? 'Rotalar' : heading.key}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Başlık (TR)</label>
+                              <input 
+                                type="text" 
+                                defaultValue={heading.title_tr}
+                                onBlur={async (e) => {
+                                  if (e.target.value !== heading.title_tr) {
+                                    await supabase.from('headings').update({ title_tr: e.target.value }).eq('id', heading.id);
+                                  }
+                                }}
+                                className="w-full p-2 border border-gray-200 rounded outline-none focus:ring-2 focus:ring-[#00ADB5] text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Başlık (EN)</label>
+                              <input 
+                                type="text" 
+                                defaultValue={heading.title_en}
+                                onBlur={async (e) => {
+                                  if (e.target.value !== heading.title_en) {
+                                    await supabase.from('headings').update({ title_en: e.target.value }).eq('id', heading.id);
+                                  }
+                                }}
+                                className="w-full p-2 border border-gray-200 rounded outline-none focus:ring-2 focus:ring-[#00ADB5] text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col items-center gap-2 min-w-[120px]">
+                          <span className={`text-xs font-bold uppercase ${heading.is_active ? 'text-green-600' : 'text-gray-400'}`}>
+                            {heading.is_active ? 'AKTİF' : 'PASİF'}
+                          </span>
+                          <button 
+                            onClick={async () => {
+                              const newStatus = !heading.is_active;
+                              
+                              // Optimistik güncelleme (Hızlı geri bildirim için)
+                              setHeadings(prev => prev.map(h => 
+                                h.id === heading.id ? { ...h, is_active: newStatus } : h
+                              ));
+
+                              const { error } = await supabase
+                                .from('headings')
+                                .update({ is_active: newStatus })
+                                .eq('id', heading.id);
+
+                              if (error) {
+                                console.error('Error updating status:', error);
+                                // Hata durumunda eski haline geri döndür
+                                setHeadings(prev => prev.map(h => 
+                                  h.id === heading.id ? { ...h, is_active: !newStatus } : h
+                                ));
+                                alert('Durum güncellenirken bir hata oluştu.');
+                              }
+                            }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${heading.is_active ? 'bg-[#00ADB5]' : 'bg-gray-200'}`}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${heading.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}

@@ -141,6 +141,8 @@ export default function App() {
   const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
+  const [headings, setHeadings] = useState<any[]>([]);
+
 
   const selectedServiceCategory = dynamicServices.find(s => s.name === selectedService)?.category || 'Günübirlik';
 
@@ -239,6 +241,30 @@ export default function App() {
       })
       .subscribe();
 
+    // Fetch Headings from Supabase
+    const fetchHeadings = async () => {
+      const { data, error } = await supabase
+        .from('headings')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching headings:', error);
+      } else {
+        setHeadings(data || []);
+      }
+    };
+
+    fetchHeadings();
+
+    // Set up real-time subscription for headings
+    const headingChannel = supabase
+      .channel('app_headings')
+      .on('postgres_changes', { event: '*', table: 'headings', schema: 'public' }, () => {
+        fetchHeadings();
+      })
+      .subscribe();
+
+
     // Hero Image Cycling
     const heroInterval = setInterval(() => {
       setCurrentHeroIdx((prev) => (prev + 1) % heroImages.length);
@@ -249,8 +275,10 @@ export default function App() {
       supabase.removeChannel(channel);
       supabase.removeChannel(boatChannel);
       supabase.removeChannel(routeChannel);
+      supabase.removeChannel(headingChannel);
       clearInterval(heroInterval);
     };
+
   }, []);
 
 
@@ -299,11 +327,11 @@ export default function App() {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             {[
-              { id: 'about', label: t.nav.about, onClick: () => setShowAbout(true) },
+              { id: 'aboutUs', label: t.nav.about, onClick: () => setShowAbout(true) },
               { id: 'fleet', label: t.nav.fleet },
               { id: 'services', label: t.nav.services },
               { id: 'destinations', label: t.nav.destinations }
-            ].map((item) => (
+            ].filter(item => headings.find(h => h.key === item.id)?.is_active !== false).map((item) => (
               <a 
                 key={item.id} 
                 href={item.onClick ? '#' : `#${item.id}`} 
@@ -339,11 +367,11 @@ export default function App() {
           >
             <div className="flex flex-col gap-6 text-center">
               {[
-                { id: 'about', label: t.nav.about, onClick: () => { setShowAbout(true); setIsMenuOpen(false); } },
+                { id: 'aboutUs', label: t.nav.about, onClick: () => { setShowAbout(true); setIsMenuOpen(false); } },
                 { id: 'fleet', label: t.nav.fleet },
                 { id: 'services', label: t.nav.services },
                 { id: 'destinations', label: t.nav.destinations }
-              ].map((item) => (
+              ].filter(item => headings.find(h => h.key === item.id)?.is_active !== false).map((item) => (
                 <a 
                   key={item.id} 
                   href={item.onClick ? '#' : `#${item.id}`} 
@@ -392,9 +420,10 @@ export default function App() {
               {t.hero.subtitle}
             </p>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8">
-              <TypeWriter text={t.hero.title1} delay={0.5} />
+              <TypeWriter text={headings.find(h => h.key === 'hero')?.is_active ? (lang === 'tr' ? headings.find(h => h.key === 'hero')?.title_tr : headings.find(h => h.key === 'hero')?.title_en) || t.hero.title1 : t.hero.title1} delay={0.5} />
             </h1>
           </motion.div>
+
         </div>
       </section>
 
@@ -476,12 +505,16 @@ export default function App() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-serif mb-4">{t.services.title}</h2>
-          <div className="w-16 h-1 bg-[#D4AF37] mx-auto"></div>
-          <p className="mt-6 text-gray-600 max-w-2xl mx-auto">{t.services.desc}</p>
-        </div>
+      {headings.find(h => h.key === 'services')?.is_active !== false && (
+        <section id="services" className="py-24 px-6 max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-serif mb-4">
+              {(lang === 'tr' ? headings.find(h => h.key === 'services')?.title_tr : headings.find(h => h.key === 'services')?.title_en) || t.services.title}
+            </h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto"></div>
+            <p className="mt-6 text-gray-600 max-w-2xl mx-auto">{t.services.desc}</p>
+          </div>
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {(dynamicServices.length > 0 ? dynamicServices : serviceTypes).map((service, index) => (
@@ -509,76 +542,86 @@ export default function App() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Featured Fleet */}
-      <section id="fleet" className="py-24 bg-[#0A192F] text-white px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-serif mb-4">{t.fleet.title}</h2>
-              <div className="w-16 h-1 bg-[#D4AF37]"></div>
+      {headings.find(h => h.key === 'fleet')?.is_active !== false && (
+        <section id="fleet" className="py-24 bg-[#0A192F] text-white px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-serif mb-4">
+                  {(lang === 'tr' ? headings.find(h => h.key === 'fleet')?.title_tr : headings.find(h => h.key === 'fleet')?.title_en) || t.fleet.title}
+                </h2>
+                <div className="w-16 h-1 bg-[#D4AF37]"></div>
+              </div>
+              <button className="text-[#D4AF37] uppercase tracking-widest text-sm hover:text-white transition-colors flex items-center gap-2">
+                {t.fleet.viewAll} <span>{isRtl ? '←' : '→'}</span>
+              </button>
             </div>
-            <button className="text-[#D4AF37] uppercase tracking-widest text-sm hover:text-white transition-colors flex items-center gap-2">
-              {t.fleet.viewAll} <span>{isRtl ? '←' : '→'}</span>
-            </button>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {(dynamicBoats.length > 0 ? dynamicBoats : featuredYachts).map((yacht, index) => (
-              <YachtCard 
-                key={yacht.id} 
-                yacht={yacht} 
-                index={index} 
-                t={t} 
-                isRtl={isRtl} 
-                onClick={(boat: Boat) => setSelectedBoat(boat)}
-              />
-            ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {(dynamicBoats.length > 0 ? dynamicBoats : featuredYachts).map((yacht, index) => (
+                <YachtCard 
+                  key={yacht.id} 
+                  yacht={yacht} 
+                  index={index} 
+                  t={t} 
+                  isRtl={isRtl} 
+                  onClick={(boat: Boat) => setSelectedBoat(boat)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Popular Routes Section */}
-      <section id="destinations" className="py-24 bg-[#F5F2ED] px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif mb-4">{t.routes?.title || 'Popular Routes'}</h2>
-            <div className="w-16 h-1 bg-[#D4AF37] mx-auto"></div>
-            <p className="mt-6 text-gray-600 max-w-2xl mx-auto">{t.routes?.desc || 'Discover the most enchanting locations across the coastline.'}</p>
-          </div>
+      {headings.find(h => h.key === 'destinations')?.is_active !== false && (
+        <section id="destinations" className="py-24 bg-[#F5F2ED] px-6 overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-serif mb-4">
+                {(lang === 'tr' ? headings.find(h => h.key === 'destinations')?.title_tr : headings.find(h => h.key === 'destinations')?.title_en) || t.routes?.title || 'Popular Routes'}
+              </h2>
+              <div className="w-16 h-1 bg-[#D4AF37] mx-auto"></div>
+              <p className="mt-6 text-gray-600 max-w-2xl mx-auto">{t.routes?.desc || 'Discover the most enchanting locations across the coastline.'}</p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {dynamicRoutes.map((route, index) => (
-              <motion.div 
-                key={route.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group relative h-[500px] overflow-hidden rounded-sm shadow-xl cursor-pointer"
-              >
-                <img 
-                  src={route.images?.[0] || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'} 
-                  alt={route.name}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F] via-[#0A192F]/20 to-transparent"></div>
-                
-                <div className="absolute bottom-0 left-0 right-0 p-8 transform group-hover:translate-y-[-20px] transition-transform duration-500">
-                  <h3 className="text-3xl font-serif text-white mb-3">{route.name}</h3>
-                  <div className="w-10 h-0.5 bg-[#D4AF37] mb-4 group-hover:w-20 transition-all duration-500"></div>
-                  <p className="text-gray-300 text-sm line-clamp-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 leading-relaxed mb-6">
-                    {route.description}
-                  </p>
-                  <button className="text-white text-xs uppercase tracking-[0.2em] flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 hover:text-[#D4AF37]">
-                    {t.routes?.explore || 'Explore Route'} <span className={isRtl ? 'rotate-180' : ''}>→</span>
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {dynamicRoutes.map((route, index) => (
+                <motion.div 
+                  key={route.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative h-[500px] overflow-hidden rounded-sm shadow-xl cursor-pointer"
+                >
+                  <img 
+                    src={route.images?.[0] || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'} 
+                    alt={route.name}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F] via-[#0A192F]/20 to-transparent"></div>
+                  
+                  <div className="absolute bottom-0 left-0 right-0 p-8 transform group-hover:translate-y-[-20px] transition-transform duration-500">
+                    <h3 className="text-3xl font-serif text-white mb-3">{route.name}</h3>
+                    <div className="w-10 h-0.5 bg-[#D4AF37] mb-4 group-hover:w-20 transition-all duration-500"></div>
+                    <p className="text-gray-300 text-sm line-clamp-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 leading-relaxed mb-6">
+                      {route.description}
+                    </p>
+                    <button className="text-white text-xs uppercase tracking-[0.2em] flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 hover:text-[#D4AF37]">
+                      {t.routes?.explore || 'Explore Route'} <span className={isRtl ? 'rotate-180' : ''}>→</span>
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
 
 
       {/* Footer */}
