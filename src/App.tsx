@@ -10,6 +10,9 @@ import { TypeWriter } from './components/TypeWriter';
 import { translations } from './translations';
 import { BookingModal } from './components/BookingModal';
 import { AdminPanel } from './components/AdminPanel';
+import { BoatDetail } from './components/BoatDetail';
+import { AboutUs } from './components/AboutUs';
+import { Phone, MessageCircle } from 'lucide-react';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 import { supabase } from './lib/supabase';
@@ -19,6 +22,7 @@ type Language = keyof typeof translations;
 interface ServiceModel {
   id: string;
   name: string;
+  category: 'Günübirlik' | 'Birden Çok Gün';
 }
 
 interface Boat {
@@ -43,7 +47,7 @@ interface Route {
 }
 
 
-const YachtCard = ({ yacht, index, t, isRtl }: any) => {
+const YachtCard = ({ yacht, index, t, isRtl, onClick }: any) => {
   const [imgIdx, setImgIdx] = useState(0);
   
   let images: string[] = [];
@@ -71,6 +75,7 @@ const YachtCard = ({ yacht, index, t, isRtl }: any) => {
       viewport={{ once: true }}
       transition={{ delay: index * 0.2 }}
       className="group cursor-pointer"
+      onClick={() => onClick(yacht)}
     >
       <div className="relative h-80 md:h-96 overflow-hidden mb-6" onClick={handleNextImage}>
         <img 
@@ -123,7 +128,8 @@ export default function App() {
   const [selectedBoatType, setSelectedBoatType] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [selectedDuration, setSelectedDuration] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedEndDate, setSelectedEndDate] = useState<string>('');
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Modal State
@@ -132,6 +138,16 @@ export default function App() {
   const [dynamicServices, setDynamicServices] = useState<ServiceModel[]>([]);
   const [dynamicBoats, setDynamicBoats] = useState<Boat[]>([]);
   const [dynamicRoutes, setDynamicRoutes] = useState<Route[]>([]);
+  const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
+  const [showAbout, setShowAbout] = useState(false);
+  const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
+
+  const selectedServiceCategory = dynamicServices.find(s => s.name === selectedService)?.category || 'Günübirlik';
+
+  const heroImages = [
+    "https://hwggdexxphmwqqoifrvv.supabase.co/storage/v1/object/public/Tekneler/1776190715162_3l3jo5.JPG",
+    "https://hwggdexxphmwqqoifrvv.supabase.co/storage/v1/object/public/Tekneler/1776190617995_nphaxa.JPG"
+  ];
 
 
   const t = translations[lang];
@@ -223,11 +239,17 @@ export default function App() {
       })
       .subscribe();
 
+    // Hero Image Cycling
+    const heroInterval = setInterval(() => {
+      setCurrentHeroIdx((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       supabase.removeChannel(channel);
       supabase.removeChannel(boatChannel);
       supabase.removeChannel(routeChannel);
+      clearInterval(heroInterval);
     };
   }, []);
 
@@ -265,24 +287,29 @@ export default function App() {
           ))}
         </div>
 
-        <nav className={`max-w-7xl mx-auto px-6 flex justify-between items-center transition-all duration-500 ${isScrolled ? 'py-3' : 'py-5'}`}>
-          <div className="flex items-center gap-2">
-            <Anchor className={`w-8 h-8 ${isScrolled ? 'text-[#D4AF37]' : 'text-white'}`} />
-            <span className={`text-2xl font-serif tracking-widest uppercase ${isScrolled ? 'text-white' : 'text-white'}`}>
-              Pacific Yacht Lines
-            </span>
-
+        <nav className={`max-w-[95%] mx-auto px-4 md:px-8 flex justify-between items-center transition-all duration-500 ${isScrolled ? 'py-3' : 'py-5'}`}>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
+            <img 
+              src="https://hwggdexxphmwqqoifrvv.supabase.co/storage/v1/object/public/Logo/pacific%20logo.png" 
+              alt="Pacific Yacht Lines" 
+              className={`transition-all duration-500 object-contain ${isScrolled ? 'h-12 md:h-16' : 'h-16 md:h-24'}`}
+            />
           </div>
           
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             {[
+              { id: 'about', label: t.nav.about, onClick: () => setShowAbout(true) },
               { id: 'fleet', label: t.nav.fleet },
               { id: 'services', label: t.nav.services },
-              { id: 'destinations', label: t.nav.destinations },
-              { id: 'about', label: t.nav.about }
+              { id: 'destinations', label: t.nav.destinations }
             ].map((item) => (
-              <a key={item.id} href={`#${item.id}`} className={`text-sm uppercase tracking-widest hover:text-[#D4AF37] transition-colors ${isScrolled ? 'text-gray-300' : 'text-white/90'}`}>
+              <a 
+                key={item.id} 
+                href={item.onClick ? '#' : `#${item.id}`} 
+                onClick={item.onClick}
+                className={`text-sm uppercase tracking-widest hover:text-[#D4AF37] transition-colors ${isScrolled ? 'text-gray-300' : 'text-white/90'}`}
+              >
                 {item.label}
               </a>
             ))}
@@ -312,12 +339,17 @@ export default function App() {
           >
             <div className="flex flex-col gap-6 text-center">
               {[
+                { id: 'about', label: t.nav.about, onClick: () => { setShowAbout(true); setIsMenuOpen(false); } },
                 { id: 'fleet', label: t.nav.fleet },
                 { id: 'services', label: t.nav.services },
-                { id: 'destinations', label: t.nav.destinations },
-                { id: 'about', label: t.nav.about }
+                { id: 'destinations', label: t.nav.destinations }
               ].map((item) => (
-                <a key={item.id} href={`#${item.id}`} onClick={() => setIsMenuOpen(false)} className="text-2xl font-serif text-white hover:text-[#D4AF37]">
+                <a 
+                  key={item.id} 
+                  href={item.onClick ? '#' : `#${item.id}`} 
+                  onClick={item.onClick || (() => setIsMenuOpen(false))} 
+                  className="text-2xl font-serif text-white hover:text-[#D4AF37]"
+                >
                   {item.label}
                 </a>
               ))}
@@ -335,11 +367,18 @@ export default function App() {
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" 
-            alt="Luxury Yacht" 
-            className="w-full h-full object-cover"
-          />
+          <AnimatePresence mode="wait">
+            <motion.img 
+              key={currentHeroIdx}
+              src={heroImages[currentHeroIdx]} 
+              alt="Luxury Yacht" 
+              className="absolute inset-0 w-full h-full object-cover"
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+            />
+          </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-b from-[#0A192F]/60 via-[#0A192F]/40 to-[#0A192F]/80"></div>
         </div>
         
@@ -352,90 +391,86 @@ export default function App() {
             <p className="text-[#D4AF37] uppercase tracking-[0.3em] text-sm md:text-base mb-6 font-medium">
               {t.hero.subtitle}
             </p>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-tight mb-8">
-              <TypeWriter text={t.hero.title1} delay={0.5} /> <br />
-              <span className="italic font-light"><TypeWriter text={t.hero.title2} delay={1.2} /></span>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white leading-tight mb-8">
+              <TypeWriter text={t.hero.title1} delay={0.5} />
             </h1>
           </motion.div>
         </div>
       </section>
 
       {/* Booking/Search Bar */}
-      <section className="relative z-20 -mt-24 px-4 max-w-6xl mx-auto">
+      <section className="relative z-20 -mt-40 md:-mt-48 px-4 max-w-5xl mx-auto">
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.5 }}
-          className="bg-white p-6 md:p-8 shadow-2xl rounded-sm border-t-4 border-[#D4AF37]"
+          className="bg-white p-6 md:p-10 shadow-3xl rounded-sm border-t-4 border-[#D4AF37]"
         >
-          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">{t.search.boatType}</label>
-              <select 
-                value={selectedBoatType} 
-                onChange={(e) => setSelectedBoatType(e.target.value)}
-                className="w-full p-3 border-b border-gray-300 focus:border-[#D4AF37] outline-none bg-transparent rounded-none text-sm"
-              >
-                <option value="">{t.search.allTypes}</option>
-                {boatTypes.map(type => <option key={type} value={type}>{t.boatTypes[type as keyof typeof t.boatTypes]}</option>)}
-              </select>
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">{t.search.service}</label>
+          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+            <div className="flex flex-col gap-2 md:col-span-1">
+              <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">{t.search.service}</label>
               <select 
                 value={selectedService} 
                 onChange={(e) => setSelectedService(e.target.value)}
-                className="w-full p-3 border-b border-gray-300 focus:border-[#D4AF37] outline-none bg-transparent rounded-none text-sm"
+                className="w-full p-4 border-b-2 border-gray-100 focus:border-[#D4AF37] outline-none bg-transparent rounded-none text-sm transition-colors"
+                required
               >
                 <option value="">{t.search.anyService}</option>
                 {dynamicServices.length > 0 ? (
-                  dynamicServices.map(service => <option key={service.id} value={service.name}>{service.name}</option>)
+                  dynamicServices.map(service => (
+                    <option key={service.id} value={service.name}>
+                      {service.name}
+                    </option>
+                  ))
                 ) : (
                   serviceTypes.map(service => <option key={service} value={service}>{t.serviceTypes[service as keyof typeof t.serviceTypes]}</option>)
                 )}
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">{t.search.duration}</label>
-              <select 
-                value={selectedDuration} 
-                onChange={(e) => setSelectedDuration(e.target.value)}
-                className="w-full p-3 border-b border-gray-300 focus:border-[#D4AF37] outline-none bg-transparent rounded-none text-sm"
-              >
-                <option value="">{t.search.anyDuration}</option>
-                {durations.map(duration => <option key={duration} value={duration}>{t.durations[duration as keyof typeof t.durations]}</option>)}
-              </select>
+            <div className="flex flex-col gap-2 md:col-span-1">
+              <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">
+                {selectedServiceCategory === 'Birden Çok Gün' ? (lang === 'tr' ? 'BAŞLANGIÇ TARİHİ' : 'START DATE') : t.search.date}
+              </label>
+              <input 
+                type="date" 
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full p-4 border-b-2 border-gray-100 focus:border-[#D4AF37] outline-none bg-transparent rounded-none text-sm transition-colors"
+                required
+              />
             </div>
 
-            <div className="flex flex-col gap-2 relative">
-              <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">{t.search.date}</label>
-              <button 
-                type="button"
-                onClick={() => setShowDatePicker(!showDatePicker)}
-                className="w-full p-3 border-b border-gray-300 focus:border-[#D4AF37] outline-none bg-transparent text-left flex justify-between items-center text-sm"
-              >
-                <span className={selectedDate ? 'text-[#0A192F]' : 'text-gray-400'}>
-                  {selectedDate ? format(selectedDate, 'PPP') : t.search.selectDate}
-                </span>
-                <CalendarIcon className="w-4 h-4 text-[#D4AF37]" />
-              </button>
-              
-              {showDatePicker && (
-                <div className={`absolute top-full ${isRtl ? 'right-0' : 'left-0'} mt-2 bg-white shadow-xl border border-gray-100 z-50 p-4`} dir="ltr">
-                  <DayPicker 
-                    mode="single" 
-                    selected={selectedDate} 
-                    onSelect={(date) => { setSelectedDate(date); setShowDatePicker(false); }}
+            {selectedServiceCategory === 'Birden Çok Gün' && (
+              <div className="flex flex-col gap-2 md:col-span-1 border-l md:pl-6 border-gray-100">
+                <label className="text-xs uppercase tracking-widest text-gray-500 font-bold">
+                  {lang === 'tr' ? 'BİTİŞ TARİHİ' : 'END DATE'}
+                </label>
+                <div className="relative">
+                  <input 
+                    type="date" 
+                    value={selectedEndDate}
+                    onChange={(e) => setSelectedEndDate(e.target.value)}
+                    className="w-full p-4 border-b-2 border-gray-100 focus:border-[#D4AF37] outline-none bg-transparent rounded-none text-sm transition-colors"
+                    required
                   />
+                  {selectedDate && selectedEndDate && (
+                    <div className="absolute -bottom-6 left-0 text-[10px] text-[#D4AF37] font-bold uppercase tracking-widest">
+                      {Math.ceil((new Date(selectedEndDate).getTime() - new Date(selectedDate).getTime()) / (1000 * 60 * 60 * 24))} {lang === 'tr' ? 'GÜN SEÇİLDİ' : 'DAYS SELECTED'}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            <button type="submit" className="bg-[#0A192F] text-white p-4 uppercase tracking-widest text-sm hover:bg-[#D4AF37] transition-colors flex items-center justify-center gap-2">
-              <Search className="w-4 h-4" /> {t.search.searchBtn}
-            </button>
+            <div className={selectedServiceCategory === 'Birden Çok Gün' ? 'md:col-span-1' : 'md:col-span-2'}>
+              <button 
+                type="submit"
+                className="w-full bg-[#0A192F] text-white p-4 h-[54px] hover:bg-[#D4AF37] transition-all duration-500 font-bold uppercase tracking-widest text-sm shadow-lg flex items-center justify-center gap-2"
+              >
+                {t.search.searchBtn} 
+              </button>
+            </div>
           </form>
         </motion.div>
       </section>
@@ -490,7 +525,14 @@ export default function App() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {(dynamicBoats.length > 0 ? dynamicBoats : featuredYachts).map((yacht, index) => (
-              <YachtCard key={yacht.id} yacht={yacht} index={index} t={t} isRtl={isRtl} />
+              <YachtCard 
+                key={yacht.id} 
+                yacht={yacht} 
+                index={index} 
+                t={t} 
+                isRtl={isRtl} 
+                onClick={(boat: Boat) => setSelectedBoat(boat)}
+              />
             ))}
           </div>
         </div>
@@ -544,8 +586,11 @@ export default function App() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
           <div className="col-span-1 md:col-span-5">
             <div className="flex items-center gap-2 mb-6">
-              <Anchor className="w-8 h-8 text-[#D4AF37]" />
-              <span className="text-2xl font-serif tracking-widest uppercase">Pacific Yacht Lines</span>
+              <img 
+                src="https://hwggdexxphmwqqoifrvv.supabase.co/storage/v1/object/public/Logo/pacific%20logo.png" 
+                alt="Pacific Yacht Lines" 
+                className="h-24 md:h-32 object-contain"
+              />
             </div>
             <p className="text-gray-400 max-w-md leading-relaxed mb-8">
               {t.footer.desc}
@@ -560,10 +605,10 @@ export default function App() {
           <div className="col-span-1 md:col-span-3">
             <h4 className="text-lg font-serif mb-6">{t.footer.quickLinks}</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><a href="#" className="hover:text-[#D4AF37] transition-colors">{t.nav.fleet}</a></li>
-              <li><a href="#" className="hover:text-[#D4AF37] transition-colors">{t.nav.destinations}</a></li>
-              <li><a href="#" className="hover:text-[#D4AF37] transition-colors">{t.nav.about}</a></li>
-              <li><a href="#" className="hover:text-[#D4AF37] transition-colors">{t.footer.contact}</a></li>
+              <li><button onClick={() => setShowAbout(true)} className="hover:text-[#D4AF37] transition-colors text-left">{t.nav.about}</button></li>
+              <li><a href="#fleet" className="hover:text-[#D4AF37] transition-colors">{t.nav.fleet}</a></li>
+              <li><a href="#services" className="hover:text-[#D4AF37] transition-colors">{t.nav.services}</a></li>
+              <li><a href="#destinations" className="hover:text-[#D4AF37] transition-colors">{t.nav.destinations}</a></li>
             </ul>
           </div>
 
@@ -623,6 +668,56 @@ export default function App() {
           date: selectedDate
         }}
       />
+
+      {/* Boat Detail Page */}
+      <AnimatePresence>
+        {selectedBoat && (
+          <BoatDetail 
+            boat={selectedBoat}
+            lang={lang}
+            isRtl={isRtl}
+            dynamicServices={dynamicServices}
+            onClose={() => setSelectedBoat(null)}
+            onBook={() => {
+              setSelectedBoat(null);
+              setIsBookingModalOpen(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* About Us Page */}
+      <AnimatePresence>
+        {showAbout && (
+          <AboutUs 
+            lang={lang}
+            onBack={() => setShowAbout(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Floating Contact Buttons */}
+      <div className="fixed bottom-6 right-6 z-[60] flex flex-col gap-4">
+        {/* WhatsApp Button */}
+        <a 
+          href="https://wa.me/905497919999" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="w-16 h-16 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
+          title="WhatsApp"
+        >
+          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" className="w-8 h-8 invert brightness-0" alt="WA" />
+        </a>
+
+        {/* Call Button */}
+        <a 
+          href="tel:+905497919999" 
+          className="w-16 h-16 bg-[#007AFF] hover:bg-[#0063ce] text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
+          title={lang === 'tr' ? 'Ara' : 'Call'}
+        >
+          <Phone className="w-8 h-8 fill-current" />
+        </a>
+      </div>
     </div>
   );
 }

@@ -28,6 +28,7 @@ interface ServiceModel {
   id: string;
   name: string;
   description: string;
+  category: 'Günübirlik' | 'Birden Çok Gün';
 }
 
 interface BoatType {
@@ -97,6 +98,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   // Form States
   const [serviceName, setServiceName] = useState('');
   const [serviceDesc, setServiceDesc] = useState('');
+  const [serviceCategory, setServiceCategory] = useState<'Günübirlik' | 'Birden Çok Gün'>('Günübirlik');
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
 
   const [boatTypeName, setBoatTypeName] = useState('');
@@ -341,7 +343,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     if (editingServiceId) {
       const { error } = await supabase
         .from('service_models')
-        .update({ name: serviceName, description: serviceDesc })
+        .update({ name: serviceName, description: serviceDesc, category: serviceCategory })
         .eq('id', editingServiceId);
 
       if (error) {
@@ -350,12 +352,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       } else {
         setServiceName('');
         setServiceDesc('');
+        setServiceCategory('Günübirlik');
         setEditingServiceId(null);
       }
     } else {
       const { error } = await supabase
         .from('service_models')
-        .insert([{ name: serviceName, description: serviceDesc }]);
+        .insert([{ name: serviceName, description: serviceDesc, category: serviceCategory }]);
 
       if (error) {
         console.error('Error adding service model:', error);
@@ -363,6 +366,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       } else {
         setServiceName('');
         setServiceDesc('');
+        setServiceCategory('Günübirlik');
       }
     }
   };
@@ -370,6 +374,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const handleEditService = (service: ServiceModel) => {
     setServiceName(service.name);
     setServiceDesc(service.description);
+    setServiceCategory(service.category || 'Günübirlik');
     setEditingServiceId(service.id);
   };
 
@@ -1063,6 +1068,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       />
                     </div>
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                      <select 
+                        value={serviceCategory}
+                        onChange={(e) => setServiceCategory(e.target.value as any)}
+                        className="w-full p-2 border rounded-md outline-none focus:ring-2 focus:ring-[#00ADB5]"
+                      >
+                        <option value="Günübirlik">Günübirlik</option>
+                        <option value="Birden Çok Gün">Birden Çok Gün</option>
+                      </select>
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
                       <textarea 
                         value={serviceDesc}
@@ -1083,7 +1099,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                   {serviceModels.map(service => (
                     <div key={service.id} className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center">
                       <div>
-                        <h4 className="font-semibold">{service.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold">{service.name}</h4>
+                          <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full font-bold shadow-sm ${service.category === 'Birden Çok Gün' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {service.category || 'Günübirlik'}
+                          </span>
+                        </div>
                         <p className="text-sm text-gray-500">{service.description}</p>
                       </div>
                       <div className="flex gap-2">

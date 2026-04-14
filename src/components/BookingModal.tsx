@@ -12,7 +12,7 @@ interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   lang: Language;
-  dynamicServices: { id: string; name: string }[];
+  dynamicServices: { id: string; name: string; category?: string }[];
   initialData: {
     boatType: string;
     service: string;
@@ -196,7 +196,11 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
                   <select name="service" value={formData.service} onChange={handleChange} className="w-full p-3 border-b border-gray-300 focus:border-[#D4AF37] outline-none bg-transparent text-sm">
                     <option value="">{t.search.anyService}</option>
                     {dynamicServices.length > 0 ? (
-                      dynamicServices.map(service => <option key={service.id} value={service.name}>{service.name}</option>)
+                      dynamicServices.map(service => (
+                        <option key={service.id} value={service.name}>
+                          {service.name} {service.category ? `(${service.category})` : ''}
+                        </option>
+                      ))
                     ) : (
                       serviceTypes.map(service => <option key={service} value={service}>{t.serviceTypes[service as keyof typeof t.serviceTypes]}</option>)
                     )}
