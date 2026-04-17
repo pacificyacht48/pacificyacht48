@@ -10,7 +10,7 @@ export const translations = {
     serviceTypes: { "Weekly Accommodation Tours": "Weekly Accommodation Tours", "Daily Sightseeing Tours": "Daily Sightseeing Tours", "Water Sports": "Water Sports", "Fishing Tours": "Fishing Tours", "Evening Moonlight Dinner Tours": "Evening Moonlight Dinner Tours", "Party / Birthday / Engagement Tours": "Party / Birthday / Engagement Tours" },
     durations: { "1 Day": "1 Day", "3 Days": "3 Days", "1 Week": "1 Week", "2 Weeks": "2 Weeks" },
     booking: { title: 'Request a Quote', name: 'Full Name', phone: 'Phone Number', email: 'Email Address', contactMethod: 'Preferred Contact Method', phoneOpt: 'Phone Call', whatsappOpt: 'WhatsApp', emailOpt: 'Email', estimatedPrice: 'Estimated Price', submit: 'Send Request', cancel: 'Cancel', pending: 'Select options to calculate', priceNote: '*This is an estimated base price. Final quote may vary.' },
-    routes: { title: 'Popular Routes', desc: 'Discover the most enchanting locations across the coastline.', explore: 'Explore Route' },
+     routes: { title: 'Popular Routes', desc: 'Discover the most enchanting locations across the coastline.', explore: 'Explore Route', aboutTheRoute: 'About This Route', highlights: 'Highlights', coves: 'Coves & Bays', placesToVisit: 'Places to Visit', bestTimeToVisit: 'Best Time to Visit', recommendedSeason: 'Recommended Season', history: 'History', activities: 'Activities' },
     boatDetail: { features: 'Boat Features', extraServices: 'Additional Services', calculate: 'Price Calculator', duration: 'Duration (Days)', total: 'Estimated Total', bookNow: 'Book Now', watchVideo: 'Watch Video' }
   },
   tr: {
@@ -24,7 +24,7 @@ export const translations = {
     serviceTypes: { "Weekly Accommodation Tours": "Haftalık Konaklamalı Turlar", "Daily Sightseeing Tours": "Günlük Gezi Turları", "Water Sports": "Su Sporları", "Fishing Tours": "Balıkçılık Turları", "Evening Moonlight Dinner Tours": "Akşam Ay Işığı Yemekli Turlar", "Party / Birthday / Engagement Tours": "Parti / Doğum Günü / Nişan Turları" },
     durations: { "1 Day": "1 Gün", "3 Days": "3 Gün", "1 Week": "1 Hafta", "2 Weeks": "2 Hafta" },
     booking: { title: 'Fiyat Teklifi Alın', name: 'Ad Soyad', phone: 'Telefon Numarası', email: 'E-posta Adresi', contactMethod: 'İletişim Yöntemi', phoneOpt: 'Telefon', whatsappOpt: 'WhatsApp', emailOpt: 'E-posta', estimatedPrice: 'Tahmini Fiyat', submit: 'Talebi Gönder', cancel: 'İptal', pending: 'Hesaplama için seçim yapın', priceNote: '*Bu tahmini bir başlangıç fiyatıdır. Nihai teklif değişiklik gösterebilir.' },
-    routes: { title: 'Popüler Rotalar', desc: 'Kıyılarımızdaki en büyüleyici durakları ve eşsiz rotaları keşfedin.', explore: 'Rotayı İncele' },
+     routes: { title: 'Popüler Rotalar', desc: 'Kıyılarımızdaki en büyüleyici durakları ve eşsiz rotaları keşfedin.', explore: 'Rotayı İncele', aboutTheRoute: 'Rota Hakkında', highlights: 'Öne Çıkanlar', coves: 'Popüler Koylar', placesToVisit: 'Gezilecek Yerler', bestTimeToVisit: 'Ziyaret İçin En İyi Zaman', recommendedSeason: 'Önerilen Mevsim', history: 'Tarihçe', activities: 'Aktiviteler' },
     boatDetail: { features: 'Tekne Özellikleri', extraServices: 'Ek Hizmetler', calculate: 'Fiyat Hesaplama', duration: 'Süre (Gün)', total: 'Tahmini Toplam', bookNow: 'Rezervasyon Yap', watchVideo: 'Videoyu İzle' }
   },
   de: {
@@ -38,7 +38,7 @@ export const translations = {
     serviceTypes: { "Weekly Accommodation Tours": "Wöchentliche Unterbringungstouren", "Daily Sightseeing Tours": "Tägliche Sightseeing-Touren", "Water Sports": "Wassersport", "Fishing Tours": "Angeltouren", "Evening Moonlight Dinner Tours": "Abendliche Mondschein-Dinner-Touren", "Party / Birthday / Engagement Tours": "Party- / Geburtstags- / Verlobungstouren" },
     durations: { "1 Day": "1 Tag", "3 Days": "3 Tage", "1 Week": "1 Woche", "2 Weeks": "2 Wochen" },
     booking: { title: 'Angebot anfordern', name: 'Vollständiger Name', phone: 'Telefonnummer', email: 'E-Mail-Adresse', contactMethod: 'Bevorzugte Kontaktmethode', phoneOpt: 'Telefonanruf', whatsappOpt: 'WhatsApp', emailOpt: 'E-Mail', estimatedPrice: 'Geschätzter Preis', submit: 'Anfrage senden', cancel: 'Abbrechen', pending: 'Wählen Sie Optionen zur Berechnung', priceNote: '*Dies ist ein geschätzter Grundpreis. Das endgültige Angebot kann variieren.' },
-    routes: { title: 'Beliebte Routen', desc: 'Entdecken Sie die bezauberndsten Orte entlang der Küste.', explore: 'Route erkunden' },
+     routes: { title: 'Beliebte Routen', desc: 'Entdecken Sie die bezauberndsten Orte entlang der Küste.', explore: 'Route erkunden', aboutTheRoute: 'Über diese Route', highlights: 'Highlights', coves: 'Buchten & Küsten', placesToVisit: 'Sehenswürdigkeiten', bestTimeToVisit: 'Beste Reisezeit', recommendedSeason: 'Empfohlene Jahreszeit', history: 'Geschichte', activities: 'Aktivitäten' },
     boatDetail: { features: 'Bootsmerkmale', extraServices: 'Zusatzleistungen', calculate: 'Preisrechner', duration: 'Dauer (Tage)', total: 'Geschätzte Summe', bookNow: 'Jetzt Buchen', watchVideo: 'Video Ansehen' }
   },
   ru: {
@@ -52,7 +52,7 @@ export const translations = {
     serviceTypes: { "Weekly Accommodation Tours": "Еженедельные туры с проживанием", "Daily Sightseeing Tours": "Ежедневные экскурсионные туры", "Water Sports": "Водные виды спорта", "Fishing Tours": "Рыболовные туры", "Evening Moonlight Dinner Tours": "Вечерние туры с ужином при лунном свете", "Party / Birthday / Engagement Tours": "Вечеринки / Дни рождения / Помолвки" },
     durations: { "1 Day": "1 День", "3 Days": "3 Дня", "1 Week": "1 Неделя", "2 Weeks": "2 Недели" },
     booking: { title: 'Запросить цену', name: 'Полное имя', phone: 'Номер телефона', email: 'Адрес электронной почты', contactMethod: 'Предпочтительный способ связи', phoneOpt: 'Телефонный звонок', whatsappOpt: 'WhatsApp', emailOpt: 'Электронная почта', estimatedPrice: 'Ориентировочная цена', submit: 'Отправить запрос', cancel: 'Отмена', pending: 'Выберите параметры для расчета', priceNote: '*Это ориентировочная базовая цена. Окончательная цена может отличаться.' },
-    routes: { title: 'Популярные маршруты', desc: 'Откройте для себя самые очаровательные места вдоль побережья.', explore: 'Исследовать маршрут' },
+    routes: { title: 'Популярные маршруты', desc: 'Откройте для себя самые очаровательные места вдоль побережья.', explore: 'Исследовать маршрут', aboutTheRoute: 'О маршруте', highlights: 'Главное', coves: 'Бухты', placesToVisit: 'Места для посещения', bestTimeToVisit: 'Лучшее время', recommendedSeason: 'Рекомендуемый сезон', history: 'История', activities: 'Мероприятия' },
     boatDetail: { features: 'Характеристики лодки', extraServices: 'Дополнительные услуги', calculate: 'Калькулятор цены', duration: 'Продолжительность (дни)', total: 'Ориентировочная сумма', bookNow: 'Забронировать сейчас', watchVideo: 'Смотреть видео' }
   },
   ar: {
@@ -66,7 +66,7 @@ export const translations = {
     serviceTypes: { "Weekly Accommodation Tours": "جولات الإقامة الأسبوعية", "Daily Sightseeing Tours": "جولات مشاهدة المعالم اليومية", "Water Sports": "رياضات مائية", "Fishing Tours": "جولات الصيد", "Evening Moonlight Dinner Tours": "جولات عشاء مسائية في ضوء القمر", "Party / Birthday / Engagement Tours": "جولات الحفلات / أعياد الميلاد / الخطوبة" },
     durations: { "1 Day": "يوم واحد", "3 Days": "3 أيام", "1 Week": "أسبوع واحد", "2 Weeks": "أسبوعين" },
     booking: { title: 'اطلب عرض أسعار', name: 'الاسم الكامل', phone: 'رقم الهاتف', email: 'عنوان البريد الإلكتروني', contactMethod: 'طريقة الاتصال المفضلة', phoneOpt: 'مكالمة هاتفية', whatsappOpt: 'واتساب', emailOpt: 'بريد إلكتروني', estimatedPrice: 'السعر التقديري', submit: 'إرسال الطلب', cancel: 'إلغاء', pending: 'حدد الخيارات للحساب', priceNote: '*هذا سعر أساسي تقديري. قد يختلف العرض النهائي.' },
-    routes: { title: 'الطرق الشهيرة', desc: 'اكتشف المواقع الأكثر سحرًا عبر الساحل.', explore: 'استكشف الطريق' },
+     routes: { title: 'الطرق الشهيرة', desc: 'اكتشف المواقع الأكثر سحرًا عبر الساحل.', explore: 'استكشف الطريق', aboutTheRoute: 'حول هذا الطريق', highlights: 'أبرز الملامح', coves: 'الخلجان والسواحل', placesToVisit: 'أماكن الزيارة', bestTimeToVisit: 'أفضل وقت للزيارة', recommendedSeason: 'الموسم الموصى به', history: 'التاريخ', activities: 'الأنشطة' },
     boatDetail: { features: 'ميزات القارب', extraServices: 'خدمات إضافية', calculate: 'حاسبة السعر', duration: 'المدة (أيام)', total: 'المجموع التقديري', bookNow: 'احجز الآن', watchVideo: 'شاهد الفيديو' }
   }
 };

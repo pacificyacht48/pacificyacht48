@@ -26,6 +26,7 @@ interface Boat {
   captain: string;
   price: number;
   description?: string;
+  isActive: boolean;
 }
 
 interface BoatDetailProps {

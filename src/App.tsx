@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
-import { boatTypes, serviceTypes, durations, featuredYachts } from './data';
+import { boatTypes, serviceTypes, durations } from './data';
 import { TypeWriter } from './components/TypeWriter';
 import { translations } from './translations';
 import { BookingModal } from './components/BookingModal';
@@ -16,6 +16,7 @@ import { Phone, MessageCircle } from 'lucide-react';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 import { supabase } from './lib/supabase';
+import RouteDetail from './components/RouteDetail';
 
 type Language = keyof typeof translations;
 
@@ -37,6 +38,7 @@ interface Boat {
   videoUrl: string;
   captain: string;
   price: number;
+  isActive: boolean;
 }
 
 interface Route {
@@ -44,6 +46,12 @@ interface Route {
   name: string;
   description: string;
   images: string[];
+  coves?: string[];            // Gezilecek koylar
+  bestTime?: string;           // Yılın en iyi zamanı
+  history?: string;            // Tarihçe
+  highlights?: string[];       // Öne çıkanlar
+  bestSeason?: string;         // Mevsim bilgisi
+  activities?: string[];       // Aktiviteler
 }
 
 
@@ -137,9 +145,10 @@ export default function App() {
   const [view, setView] = useState<'home' | 'admin'>('home');
   const [dynamicServices, setDynamicServices] = useState<ServiceModel[]>([]);
   const [dynamicBoats, setDynamicBoats] = useState<Boat[]>([]);
-  const [dynamicRoutes, setDynamicRoutes] = useState<Route[]>([]);
-  const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
-  const [showAbout, setShowAbout] = useState(false);
+   const [dynamicRoutes, setDynamicRoutes] = useState<Route[]>([]);
+   const [selectedBoat, setSelectedBoat] = useState<Boat | null>(null);
+   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+   const [showAbout, setShowAbout] = useState(false);
   const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
   const [headings, setHeadings] = useState<any[]>([]);
 
@@ -191,6 +200,7 @@ export default function App() {
       const { data, error } = await supabase
         .from('boats')
         .select('*')
+        .eq('is_active', true)
         .order('name');
       
       if (error) {
@@ -201,8 +211,9 @@ export default function App() {
           ...b,
           serviceModelIds: b.service_model_ids || [],
           images: b.images || [],
-          videoUrl: b.video_url || ''
-        }));
+          videoUrl: b.video_url || '',
+          isActive: b.is_active ?? true
+        })).filter((boat: Boat) => boat.isActive !== false); // Ensure only active yachts are displayed
         setDynamicBoats(mappedBoats);
       }
     };
@@ -217,19 +228,32 @@ export default function App() {
       })
       .subscribe();
 
-    // Fetch dynamic routes from Supabase
-    const fetchRoutes = async () => {
-      const { data, error } = await supabase
-        .from('routes')
-        .select('*')
-        .order('name');
-      
-      if (error) {
-        console.error('Error fetching routes:', error);
-      } else {
-        setDynamicRoutes(data || []);
-      }
-    };
+     // Fetch dynamic routes from Supabase
+     const fetchRoutes = async () => {
+       const { data, error } = await supabase
+         .from('routes')
+         .select('*')
+         .order('name');
+
+       if (error) {
+         console.error('Error fetching routes:', error);
+       } else {
+         // Map snake_case from DB to camelCase for the app
+         const mappedRoutes = (data || []).map((r: any) => ({
+           id: r.id,
+           name: r.name,
+           description: r.description,
+           images: r.images?.length > 0 ? r.images : (r.image ? [r.image] : []),
+           coves: r.coves || [],
+           bestTime: r.best_time || '',
+           bestSeason: r.best_season || r.best_time || '',
+           history: r.history || '',
+           highlights: r.highlights || [],
+           activities: r.activities || []
+         }));
+         setDynamicRoutes(mappedRoutes);
+       }
+     };
 
     fetchRoutes();
 
@@ -560,8 +584,8 @@ export default function App() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {(dynamicBoats.length > 0 ? dynamicBoats : featuredYachts).map((yacht, index) => (
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+               {dynamicBoats.map((yacht, index) => (
                 <YachtCard 
                   key={yacht.id} 
                   yacht={yacht} 
@@ -588,16 +612,17 @@ export default function App() {
               <p className="mt-6 text-gray-600 max-w-2xl mx-auto">{t.routes?.desc || 'Discover the most enchanting locations across the coastline.'}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {dynamicRoutes.map((route, index) => (
-                <motion.div 
-                  key={route.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group relative h-[500px] overflow-hidden rounded-sm shadow-xl cursor-pointer"
-                >
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+               {dynamicRoutes.map((route, index) => (
+                 <motion.div
+                   key={route.id}
+                   initial={{ opacity: 0, y: 30 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ delay: index * 0.1 }}
+                   className="group relative h-[500px] overflow-hidden rounded-sm shadow-xl cursor-pointer"
+                   onClick={() => setSelectedRoute(route)}
+                 >
                   <img 
                     src={route.images?.[0] || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'} 
                     alt={route.name}
@@ -729,17 +754,30 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* About Us Page */}
-      <AnimatePresence>
-        {showAbout && (
-          <AboutUs 
-            lang={lang}
-            onBack={() => setShowAbout(false)}
-          />
-        )}
-      </AnimatePresence>
+       {/* About Us Page */}
+       <AnimatePresence>
+         {showAbout && (
+           <AboutUs
+             lang={lang}
+             onBack={() => setShowAbout(false)}
+           />
+         )}
+       </AnimatePresence>
 
-      {/* Floating Contact Buttons */}
+       {/* Route Detail Modal */}
+       <AnimatePresence>
+         {selectedRoute && (
+           <RouteDetail
+             route={selectedRoute}
+             isOpen={!!selectedRoute}
+             onClose={() => setSelectedRoute(null)}
+             t={t}
+             isRtl={isRtl}
+           />
+         )}
+       </AnimatePresence>
+
+       {/* Floating Contact Buttons */}
       <div className="fixed bottom-6 right-6 z-[60] flex flex-col gap-4">
         {/* WhatsApp Button */}
         <a 
@@ -764,4 +802,3 @@ export default function App() {
     </div>
   );
 }
-
