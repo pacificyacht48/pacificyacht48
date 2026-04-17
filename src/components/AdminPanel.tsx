@@ -367,7 +367,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       <div className="grid grid-cols-2 gap-2">
                         {routeImages.map((url, idx) => (
                           <div key={idx} className="aspect-video bg-gray-50 border border-dashed rounded relative overflow-hidden flex items-center justify-center">
-                            {url ? <><img src={url} className="w-full h-full object-cover" /><button onClick={()=>{const n=[...routeImages]; n[idx]=''; setRouteImages(n);}} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"><X size={10}/></button></> : <label className="cursor-pointer">{uploadingRouteIdx === idx ? <Loader2 className="animate-spin"/> : <Upload size={16}/><input type="file" className="hidden" onChange={e=>handleFileUpload(e, idx, true)}/></label>}
+                            {url ? <><img src={url} className="w-full h-full object-cover" /><button onClick={()=>{const n=[...routeImages]; n[idx]=''; setRouteImages(n);}} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"><X size={10}/></button></> : <label className="cursor-pointer">{uploadingRouteIdx === idx ? <Loader2 className="animate-spin"/> : <><Upload size={16}/><input type="file" className="hidden" onChange={e=>handleFileUpload(e, idx, true)}/></>}</label>}
                           </div>
                         ))}
                       </div>
@@ -445,7 +445,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                        <div className="grid grid-cols-2 gap-2">
                          {boatImages.map((u, i) => (
                            <div key={i} className="aspect-video bg-gray-50 border border-dashed rounded relative flex items-center justify-center">
-                             {u ? <img src={u} className="w-full h-full object-cover" /> : <label className="cursor-pointer">{uploadingIdx === i ? <Loader2 className="animate-spin"/> : <Upload size={16}/><input type="file" className="hidden" onChange={e=>handleFileUpload(e, i)}/></label>}
+                             {u ? <img src={u} className="w-full h-full object-cover" /> : <label className="cursor-pointer">{uploadingIdx === i ? <Loader2 className="animate-spin"/> : <><Upload size={16}/><input type="file" className="hidden" onChange={e=>handleFileUpload(e, i)}/></>}</label>}
                            </div>
                          ))}
                        </div>
