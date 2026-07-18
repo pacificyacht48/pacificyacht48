@@ -1,20 +1,23 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Pacific Yacht Lines
 
-# Run and deploy your AI Studio app
+React, Vite ve Supabase tabanlı tanıtım, teklif ve rezervasyon uygulaması.
 
-This contains everything you need to run your app locally.
+## Yerel kurulum
 
-View your app in AI Studio: https://ai.studio/apps/fa5e2083-a18d-4406-8887-f42980bdd1be
+1. `npm ci`
+2. `.env.example` dosyasını `.env.local` olarak kopyalayın ve Supabase değerlerini girin.
+3. Supabase SQL Editor içinde `supabase-sql/production_schema.sql` dosyasını çalıştırın.
+4. `supabase-sql/ADMIN_SETUP.md` içindeki adımlarla yönetici kullanıcıyı yetkilendirin.
+5. `npm run dev`
 
-## Run Locally
+## Doğrulama ve yayın
 
-**Prerequisites:**  Node.js
+```bash
+npm run check
+npm run build
+```
 
+Vercel için `vercel.json` güvenlik başlıklarını ve SPA yönlendirmesini içerir. `dist/` dizini üretim çıktısıdır. `.env.local` hiçbir zaman kaynak kontrolüne eklenmemelidir.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Gizlilik ve kullanım koşulları taslakları yayın öncesinde işletmenin gerçek süreçlerine göre hukuk danışmanı tarafından doğrulanmalıdır.
+

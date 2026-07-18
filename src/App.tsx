@@ -13,8 +13,6 @@ import { AdminPanel } from './components/AdminPanel';
 import { BoatDetail } from './components/BoatDetail';
 import { AboutUs } from './components/AboutUs';
 import { Phone, MessageCircle } from 'lucide-react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db } from './firebase';
 import { supabase } from './lib/supabase';
 import RouteDetail from './components/RouteDetail';
 
@@ -142,7 +140,7 @@ export default function App() {
 
   // Modal State
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [view, setView] = useState<'home' | 'admin'>('home');
+  const [view, setView] = useState<'home' | 'admin'>(() => window.location.hash === '#admin' ? 'admin' : 'home');
   const [dynamicServices, setDynamicServices] = useState<ServiceModel[]>([]);
   const [dynamicBoats, setDynamicBoats] = useState<Boat[]>([]);
    const [dynamicRoutes, setDynamicRoutes] = useState<Route[]>([]);
@@ -166,6 +164,8 @@ export default function App() {
 
   // Handle scroll for navbar
   React.useEffect(() => {
+    const handleHashChange = () => setView(window.location.hash === '#admin' ? 'admin' : 'home');
+    window.addEventListener('hashchange', handleHashChange);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -296,6 +296,7 @@ export default function App() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('hashchange', handleHashChange);
       supabase.removeChannel(channel);
       supabase.removeChannel(boatChannel);
       supabase.removeChannel(routeChannel);
@@ -312,7 +313,7 @@ export default function App() {
   };
 
   if (view === 'admin') {
-    return <AdminPanel onBack={() => setView('home')} />;
+    return <AdminPanel onBack={() => { window.location.hash = ''; setView('home'); }} />;
   }
 
   return (
@@ -664,7 +665,7 @@ export default function App() {
               {t.footer.desc}
             </p>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"><Facebook className="w-4 h-4" /></a>
+              <a href="https://facebook.com/pacificyachtlines" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"><Facebook className="w-4 h-4" /></a>
               <a href="https://instagram.com/pacificyachtlines" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"><Instagram className="w-4 h-4" /></a>
               <a href="https://wa.me/905497919999" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" className="w-5 h-5" alt="WhatsApp" /></a>
             </div>
@@ -716,9 +717,8 @@ export default function App() {
           <p>&copy; {new Date().getFullYear()} Pacific Yacht Lines. {t.footer.rights}</p>
 
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-white transition-colors">{t.footer.privacy}</a>
-            <a href="#" className="hover:text-white transition-colors">{t.footer.terms}</a>
-            <button onClick={() => setView('admin')} className="text-gray-700 hover:text-[#D4AF37] transition-colors text-xs">Admin</button>
+            <a href="/privacy.html" className="hover:text-white transition-colors">{t.footer.privacy}</a>
+            <a href="/terms.html" className="hover:text-white transition-colors">{t.footer.terms}</a>
           </div>
         </div>
       </footer>
@@ -733,7 +733,7 @@ export default function App() {
           boatType: selectedBoatType,
           service: selectedService,
           duration: selectedDuration,
-          date: selectedDate
+          date: selectedDate ? new Date(`${selectedDate}T00:00:00`) : undefined
         }}
       />
 

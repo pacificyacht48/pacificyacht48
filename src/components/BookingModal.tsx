@@ -53,6 +53,8 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
   });
 
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  const [website, setWebsite] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Update form if initialData changes while modal is closed
   useEffect(() => {
@@ -84,15 +86,16 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (website || isSubmitting) return;
     if (!formData.name || !formData.phone || !formData.email) {
       alert("Lütfen isim, telefon ve e-posta alanlarını doldurun.");
       return;
     }
 
     const payload = {
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
+      name: formData.name.trim().slice(0, 120),
+      phone: formData.phone.trim().slice(0, 40),
+      email: formData.email.trim().toLowerCase().slice(0, 254),
       contact_method: formData.contactMethod,
       boat_type: formData.boatType,
       service: formData.service,
@@ -104,6 +107,7 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
     };
 
     try {
+      setIsSubmitting(true);
       const { error } = await supabase.from('bookings').insert([payload]);
       if (error) throw error;
       
@@ -112,6 +116,8 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
     } catch (error: any) {
       console.error("Booking error:", error);
       alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -145,6 +151,9 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="absolute -left-[10000px]" aria-hidden="true">
+                <label>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} /></label>
+              </div>
               {/* Personal Info */}
               <div className="space-y-4">
                 <div>
@@ -227,7 +236,7 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
                     {estimatedPrice ? `€${estimatedPrice.toLocaleString()}` : <span className="text-sm text-gray-400 font-sans">{t.booking.pending}</span>}
                   </div>
                 </div>
-                <button type="submit" className="w-full bg-[#0A192F] text-white p-4 uppercase tracking-widest text-sm hover:bg-[#D4AF37] transition-colors">
+                <button type="submit" disabled={isSubmitting} className="w-full bg-[#0A192F] text-white p-4 uppercase tracking-widest text-sm hover:bg-[#D4AF37] transition-colors disabled:opacity-50">
                   {t.booking.submit}
                 </button>
               </div>
@@ -263,7 +272,7 @@ export function BookingModal({ isOpen, onClose, lang, dynamicServices, initialDa
               <p className="text-xs text-gray-500">{t.booking.priceNote}</p>
             </div>
 
-            <button onClick={handleSubmit} className="w-full bg-[#D4AF37] text-[#0A192F] p-4 uppercase tracking-widest text-sm font-semibold hover:bg-white transition-colors mt-8">
+            <button onClick={handleSubmit} disabled={isSubmitting} className="w-full bg-[#D4AF37] text-[#0A192F] p-4 uppercase tracking-widest text-sm font-semibold hover:bg-white transition-colors mt-8 disabled:opacity-50">
               {t.booking.submit}
             </button>
           </div>

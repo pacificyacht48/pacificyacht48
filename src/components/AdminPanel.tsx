@@ -94,6 +94,7 @@ interface AdminPanelProps {
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [user, setUser] = useState<any>(null);
+  const [authChecking, setAuthChecking] = useState(true);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'services' | 'boats' | 'routes' | 'bookings' | 'headings'>('dashboard');
   const [serviceModels, setServiceModels] = useState<ServiceModel[]>([]);
@@ -140,13 +141,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
   const [uploadingRouteIdx, setUploadingRouteIdx] = useState<number | null>(null);
 
+  const acceptAdminSession = async (session: any) => {
+    if (!session) {
+      setUser(null);
+      setAuthChecking(false);
+      return;
+    }
+
+    const { data, error } = await supabase.rpc('is_admin');
+    if (error || data !== true) {
+      await supabase.auth.signOut();
+      setUser(null);
+    } else {
+      setUser(session.user);
+    }
+    setAuthChecking(false);
+  };
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    supabase.auth.getSession().then(({ data: { session } }) => acceptAdminSession(session));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      void acceptAdminSession(session);
     });
 
     return () => subscription.unsubscribe();
@@ -204,8 +220,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoginLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert(`Hata: ${error.message}`);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      alert('Giriş bilgileri geçersiz.');
+    } else {
+      await acceptAdminSession(data.session);
+    }
     setIsLoginLoading(false);
   };
 
@@ -218,7 +238,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
     try {
       if (isRoute) setUploadingRouteIdx(index); else setUploadingIdx(index);
-      const fileExt = file.name.split('.').pop();
+      if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
+        throw new Error('Yalnızca 5 MB altındaki görseller yüklenebilir.');
+      }
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from('uploads').upload(fileName, file);
       if (uploadError) throw uploadError;
@@ -301,6 +324,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     setRouteActivities(route.activities && route.activities.length > 0 ? route.activities : ['', '', '']);
     setEditingRouteId(route.id); setIsRouteFormOpen(true);
   };
+
+  if (authChecking) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#0A192F] text-white"><Loader2 className="animate-spin" /></div>;
+  }
 
   if (!user) {
     return (
